@@ -135,6 +135,8 @@
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="ModelsDB\ApplicationDbContext.cs" />
+    <Compile Include="ModelsDB\EmailService.cs" />
+    <Compile Include="ModelsDB\NotificationService.cs" />
     <Compile Include="ModelsDB\Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
