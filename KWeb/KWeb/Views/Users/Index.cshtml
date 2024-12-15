@@ -1,0 +1,125 @@
+﻿@model KWeb.ViewModels.UsersViewModel
+
+@{
+    ViewData["Title"] = "Main";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+@section Styles {
+
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="mb-3 text-primary">Usuarios del sistema</h2>
+        <button style="background-color: var(--primary-color);"
+                class="btn btn-primary"
+                data-toggle="modal"
+                data-target="#createUserModal">
+            Registrar usuario
+        </button>
+    </div>
+
+    <table class="table table-hover table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Contraseña</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Users.Count() == 0)
+            {
+                <tr class="no-data">
+                    <td colspan="11">Registro vacio</td>
+                </tr>
+            }
+
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.FirstName</td>
+                    <td>@user.LastName</td>
+                    <td>@user.Email</td>
+                    <td>@user.Phone</td>
+                    <td>@user.Password</td>
+                    <td>
+                        @if (user.Role == Enum.GetName(typeof(KWeb.Utils.RolesEnum), KWeb.Utils.RolesEnum.Administrator))
+                        {
+                            <span class="badge text-white " style="background-color: var(--primary-color);">Administrador</span>
+                        }
+                        else if (user.Role == Enum.GetName(typeof(KWeb.Utils.RolesEnum), KWeb.Utils.RolesEnum.Doctor))
+                        {
+                            <span class="badge badge-success">Doctor</span>
+                        }
+                        else if (user.Role == Enum.GetName(typeof(KWeb.Utils.RolesEnum), KWeb.Utils.RolesEnum.Patient))
+                        {
+                            <span class="badge badge-secondary">Paciente</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-dark">Desconocido</span>
+                        }
+                    </td>
+                    <td>@(user.IsActive ? "Activo" : "Inactivo")</td>
+                    <td>Acciones</td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+</div>
+
+@{ Html.RenderPartial("Partials/_CreateUserModal", Model.UserRequest); }
+
+
+
+
+@section Scripts {
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("roleSelector").addEventListener("change", function () {
+
+                var role = this.value;
+                var doctorFields = document.getElementById("doctorFields");
+                var patientFields = document.getElementById("patientFields");
+                var doctorInput = doctorFields.querySelector("input");
+                var patientInput = patientFields.querySelector("input");
+
+                if (role === "Doctor") {
+                    doctorFields.style.display = "block";
+                    patientFields.style.display = "none";
+                    doctorInput.setAttribute("required", "required");
+                    patientInput.removeAttribute("required");
+                    patientInput.value = "";
+                } else if (role === "Patient") {
+                    doctorFields.style.display = "none";
+                    patientFields.style.display = "block";
+                    doctorInput.removeAttribute("required");
+                    patientInput.setAttribute("required", "required");
+                    doctorInput.value = "";
+                } else {
+                    doctorFields.style.display = "none";
+                    patientFields.style.display = "none";
+                    doctorInput.removeAttribute("required");
+                    patientInput.removeAttribute("required");
+                    doctorInput.value = "";
+                    patientInput.value = "";
+                }
+            });
+        })
+
+
+
+    </script>
+
+}

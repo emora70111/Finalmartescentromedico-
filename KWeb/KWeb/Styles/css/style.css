@@ -243,16 +243,16 @@ input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focu
 }
 
 .overlay:before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.9;
-  background: #223a66;
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.9;
+    background: #0056b3;
 }
 
 .overly-2 {

@@ -1,0 +1,129 @@
+﻿@model KWeb.ViewModels.AppointmentsOfPatientViewModel
+
+@{
+    ViewData["Title"] = "Agendar Cita";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+
+}
+<h2 class="mb-3 text-primary">Agendar Cita</h2>
+
+@using (Html.BeginForm("Register", "Appointments", FormMethod.Post, new { @class = "needs-validation" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group mb-3">
+        <label for="DoctorID" class="form-label">Seleccione un Doctor</label>
+        @Html.DropDownListFor(
+            model => model.AppointmentRequest.DoctorID,
+            new SelectList(
+                Model.Doctors.Select(d => new { d.DoctorID, DoctorName = d.Users.FirstName }),
+                "DoctorID",
+                "DoctorName"
+            ),
+            "Seleccione un doctor",
+            new { @class = "form-control", @required = "required", id = "doctorSelect" }
+        )
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="Date" class="form-label">Fecha de la Cita</label>
+        @Html.TextBoxFor(
+            model => model.AppointmentRequest.Date,
+            "{0:yyyy-MM-dd}",
+            new { @class = "form-control", @type = "date", @required = "required", id = "appointmentDate" }
+        )
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="Time" class="form-label">Seleccione un Horario <span id="dia-semana"></span></label>
+        <div id="scheduleGrid" class="d-flex flex-wrap gap-2">
+            <!-- Los horarios aparecerán aquí -->
+        </div>
+    </div>
+
+    <input type="hidden" id="selectedTime" name="AppointmentRequest.Time" />
+
+    <div class="form-group mb-3">
+        <label for="Notes" class="form-label">Notas</label>
+        @Html.TextAreaFor(
+            model => model.AppointmentRequest.Notes,
+            new { @class = "form-control", @rows = "3", @placeholder = "Ingrese notas adicionales (opcional)" }
+        )
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100 py-2 fs-5">Agendar Cita</button>
+}
+ 
+@section Scripts {
+    <script>
+        let dia_semana = document.getElementById("dia-semana")
+        const daysOfWeek = [
+            "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"
+        ];
+
+        document.getElementById("doctorSelect").addEventListener("change", updateSchedules);
+        document.getElementById("appointmentDate").addEventListener("change", updateSchedules);
+
+        function updateSchedules() {
+            const doctorId = document.getElementById("doctorSelect").value;
+            const appointmentDate = document.getElementById("appointmentDate").value;
+            const scheduleGrid = document.getElementById("scheduleGrid");
+
+            // Limpiar horarios actuales
+            scheduleGrid.innerHTML = "";
+
+            if (doctorId && appointmentDate) {
+                // Obtener el día de la semana de la fecha seleccionada
+                const date = new Date(appointmentDate);
+
+                const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
+
+                dia_semana.textContent = `(${daysOfWeek[dayOfWeek]})`
+
+                // Llamar a la API con doctorId y dayOfWeek
+                fetch(`/schedules/GetSchedulesByDoctor?doctorId=${doctorId}&dayOfWeek=${dayOfWeek}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(schedule => {       
+
+                            console.log(schedule)       
+
+                            const startTime = `${schedule.StartTime.Hours.toString().padStart(2, '0')}:${schedule.StartTime.Minutes.toString().padStart(2, '0')}`;
+                            const endTime = `${schedule.EndTime.Hours.toString().padStart(2, '0')}:${schedule.EndTime.Minutes.toString().padStart(2, '0')}`;
+
+                            const scheduleButton = document.createElement("div");
+                            if (schedule.Status == "Disponible") {
+                                scheduleButton.className = "btn btn-outline-primary";
+                                scheduleButton.style.cursor = "pointer";
+
+                            }
+                            if (schedule.Status == "Ocupado") {
+                                scheduleButton.className = "btn btn-outline-danger";
+                            }
+
+                            scheduleButton.textContent = `${startTime} - ${endTime}`;
+
+                            // Al hacer clic, seleccionar el horario
+                            if (schedule.Status == "Disponible") {
+                                scheduleButton.addEventListener("click", function () {
+                                    document.getElementById("selectedTime").value = startTime;
+
+                                    // Resaltar el horario seleccionado
+                                    Array.from(scheduleGrid.children).forEach(btn => btn.classList.remove("bg-success"));
+                                    scheduleButton.classList.add("bg-success");
+                                    scheduleButton.classList.add("text-white");
+                                });
+                            }
+
+                            scheduleGrid.appendChild(scheduleButton);
+                        });
+                    });
+            }
+        }
+
+    </script>
+}
+
+ 

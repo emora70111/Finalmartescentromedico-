@@ -1,0 +1,240 @@
+﻿@model List<KWeb.ViewModels.ScheduleViewModel>
+
+@{
+    ViewData["Title"] = "Configurar Disponibilidad";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.css" rel="stylesheet" />
+
+    <style>
+        #calendar {
+            max-width: 900px;
+            margin: 20px auto;
+        }
+    </style>
+
+    <!-- Flatpickr CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+
+
+}
+
+<div class="d-flex justify-content-between align-items-center">
+    <h2 class="mb-3 text-primary">Disponibilidad</h2>
+    <button style="background-color: var(--primary-color);"
+            class="btn btn-primary"
+            data-toggle="modal"
+            data-target="#addAvailabilityModal">
+        Configurar
+    </button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addAvailabilityModal" tabindex="-1" aria-labelledby="addAvailabilityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAvailabilityModalLabel">Nueva Disponibilidad</h5>
+            </div>
+            <form method="post" action="@Url.Action("Configure", "Schedules")">
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="DayOfWeek">Día de la semana</label>
+                        <select name="DayOfWeek" class="form-control" required>
+                            <option value="" disabled selected>Seleccione un día</option>
+                            <option value="Monday">Lunes</option>
+                            <option value="Tuesday">Martes</option>
+                            <option value="Wednesday">Miércoles</option>
+                            <option value="Thursday">Jueves</option>
+                            <option value="Friday">Viernes</option>
+                            <option value="Saturday">Sábado</option>
+                            <option value="Sunday">Domingo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="StartTime">Hora de inicio</label>
+                        <input name="StartTime" id="StartTime" type="text" class="form-control" placeholder="Seleccione la hora de inicio" />
+                    </div>
+                    <div class="form-group">
+                        <label for="EndTime">Hora de fin</label>
+                        <input name="EndTime" id="EndTime" type="text" class="form-control" placeholder="Seleccione la hora de fin" disabled />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Calendario -->
+<div id="calendar"></div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.js"></script>
+
+    <!-- Flatpickr JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mapeo de días de la semana a índices de FullCalendar
+            const DayOfWeekToIndex = {
+                monday: 1,
+                tuesday: 2,
+                wednesday: 3,
+                thursday: 4,
+                friday: 5,
+                saturday: 6,
+                sunday: 0
+            };
+
+            const calendarEl = document.getElementById('calendar');
+            const events = [
+                @foreach (var schedule in Model)
+                {
+                    <text>
+                    {
+                        id: '@schedule.ScheduleID',
+                        title: '@schedule.Status',
+                        startTime: '@schedule.StartTime.ToString("hh\\:mm")',
+                        endTime: '@schedule.EndTime.ToString("hh\\:mm")',
+                        daysOfWeek: [DayOfWeekToIndex["@schedule.DayOfWeek".toLowerCase()]],
+                        color: '@schedule.Status' === 'Disponible' ? 'green' : 'red', // Asigna color dependiendo del estado
+                        textColor: 'white' 
+                    },
+                    </text>
+                }
+            ];
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                locale: 'es',
+                editable: true,
+                droppable: true,
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridWeek,timeGridDay'
+                },
+                events: events,
+                eventDrop: function (info) {
+                    const updatedEvent = {
+                        id: info.event.id,
+                        startTime: info.event.start.toISOString().split('T')[1],
+                        endTime: info.event.end.toISOString().split('T')[1],
+                        dayOfWeek: info.event.start.toLocaleString('en-us', { weekday: 'long' })
+                    };
+
+                    fetch('@Url.Action("UpdateSchedule", "Schedules")', {
+
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(updatedEvent),
+                    }).then(response => {
+                        if (!response.ok) {
+                            alert('No se pudo actualizar el horario');
+                        }
+                    });
+                },
+                eventClick: function (info) {
+                    if (confirm('¿Desea eliminar este horario?')) {
+                        fetch('@Url.Action("DeleteSchedule", "Schedules")/' + info.event.id, {
+                            method: 'POST',
+                        }).then(response => {
+                            if (response.ok) {
+                                info.event.remove();
+                            } else {
+                                alert('No se pudo eliminar el horario');
+                            }
+                        });
+                    }
+                }
+            });
+
+            calendar.render();
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let startTimePicker, endTimePicker;
+
+            // Configuración base para Flatpickr
+            const flatpickrOptions = {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                minuteIncrement: 30, // Solo permitir bloques de 30 minutos (:00, :30)
+            };
+
+            // Inicializar Flatpickr para Hora de Inicio
+            startTimePicker = flatpickr("#StartTime", {
+                ...flatpickrOptions,
+                onChange: function (selectedDates, dateStr) {
+                    if (dateStr) {
+                        // Habilitar Hora de Fin al seleccionar Hora de Inicio
+                        document.getElementById("EndTime").disabled = false;
+
+                        // Obtener la hora seleccionada de StartTime
+                        const startDate = new Date(selectedDates[0]);
+
+                        // Calcular la hora mínima posible para EndTime
+                        let startTimeStr = startDate.toTimeString().substring(0, 5);
+                        let endTimeStr = (startDate.getMinutes() === 30) ?
+                            `${startDate.getHours() + 1}:00` :
+                            `${startDate.getHours()}:30`;  // Si es :00, el siguiente es :30, si es :30, el siguiente es :00
+
+                        // Establecer el valor del campo EndTime
+                        endTimePicker.set({
+                            enableTime: true,
+                            noCalendar: true,
+                            dateFormat: "H:i",
+                            time_24hr: true,
+                            minTime: startTimeStr,  // Establecer el tiempo mínimo a partir de StartTime
+                            maxTime: "23:30",  // El tiempo máximo es hasta las 23:30
+                            disable: [
+                                { from: "00:00", to: "00:29" },
+                                { from: "00:30", to: "00:59" }
+                            ],
+                        });
+
+                        // Establecer el valor mínimo para EndTime si StartTime está definido
+                        document.getElementById("EndTime").value = endTimeStr;
+                    }
+                },
+            });
+
+            // Inicializar Flatpickr para Hora de Fin
+            endTimePicker = flatpickr("#EndTime", {
+                ...flatpickrOptions,
+                minuteIncrement: 30, // Solo permitir bloques de 30 minutos (:00, :30)
+                disable: [
+                    { from: "00:00", to: "00:29" },
+                    { from: "00:30", to: "00:59" }
+                ],
+            });
+
+            // Asegurarse de que los valores se envíen al servidor
+            document.querySelector("form").addEventListener("submit", function (e) {
+                // Asignar los valores seleccionados de StartTime y EndTime al formulario
+                const startTimeValue = startTimePicker.selectedDates[0] ? startTimePicker.selectedDates[0].toTimeString().substring(0, 5) : '';
+                const endTimeValue = endTimePicker.selectedDates[0] ? endTimePicker.selectedDates[0].toTimeString().substring(0, 5) : '';
+
+                console.log(startTimeValue, endTimeValue)
+
+                document.getElementById("StartTime").value = startTimeValue;
+                document.getElementById("EndTime").value = endTimeValue;
+            });
+        });
+    </script>
+
+
+}

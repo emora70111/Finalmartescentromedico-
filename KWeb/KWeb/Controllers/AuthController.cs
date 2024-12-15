@@ -1,4 +1,8 @@
-﻿using KWeb.ModelsDB;
+﻿
+using KWeb.Models.Request;
+using KWeb.ModelsDB;
+using KWeb.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,73 +13,120 @@ namespace KWeb.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly CONSULTORIO_VIDA_SALUDEntities _context;
 
         public AuthController()
         {
-            _context = new ApplicationDbContext();
+            _context = new CONSULTORIO_VIDA_SALUDEntities();
         }
 
         public ActionResult Login()
         {
-            return View(new Usuario());
+            return View(new UserLoginRequest());
         }
 
         [HttpPost]
-        public ActionResult ValidateUser(Usuario usuario)
-        {
-            ModelState.Remove("Phone");
+        public ActionResult Login(UserLoginRequest request)
+        {        
+
             if (ModelState.IsValid)
-            {              
-                var existingUser = _context.Usuarios
-                    .FirstOrDefault(u => u.Email == usuario.Email && u.Password == usuario.Password);
+            {
+                var existingUser = _context.Users
+                    .FirstOrDefault(u => u.Email == request.Email && u.Password == request.Password);
 
                 if (existingUser != null)
-                {                   
-                    return RedirectToAction("Index", "Home");
+                {
+                    RoleOption options = RoleOptions.GetRoleOptions(existingUser.Role);
+                    HttpContext.Session["options"] = JsonConvert.SerializeObject(options);
+                    HttpContext.Session["user"] = JsonConvert.SerializeObject(existingUser, new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    });
+
+                    return RedirectToAction("Index", "Main");
                 }
 
             }
-            ModelState.AddModelError("", "Credenciales invalidas.");
-
-            return View("login", usuario);
+            TempData["ErrorMessage"] = "Credenciales invalidas.";
+            return View(request);
         }
 
         public ActionResult Register()
         {
-            return View(new Usuario());
+            return View(new UserRegisterRequest());
         }
 
         [HttpPost]
-        public ActionResult Create(Usuario usuario)
+        public ActionResult Register(UserRegisterRequest request)
         {
-            bool usuarioExistente = _context.Usuarios.Any(u => u.Email == usuario.Email);
+
+            bool usuarioExistente = _context.Users.Any(u => u.Email == request.Email);
 
             if (usuarioExistente)
             {
-                ModelState.AddModelError("", "El usuario ya existe.");
+                TempData["ErrorMessage"] = "El correo electrónico ya está registrado.";
+                return View(request);
             }
 
             if (ModelState.IsValid)
             {
+                var nuevoUsuario = new Users
+                {
+                    FirstName = request.FirstName,
+                    LastName = request.LastName,
+                    Email = request.Email,
+                    Phone = request.Phone,
+                    Password = request.Password, 
+                    Role = request.Role,
+                    IsActive = true
+                };
 
-                _context.Usuarios.Add(usuario);
+                _context.Users.Add(nuevoUsuario);        
                 _context.SaveChanges();
-                TempData["SuccessMessage"] = "Usuario creado.";
 
+                if (request.Role == Enum.GetName(typeof(RolesEnum), RolesEnum.Patient))
+                {
+                    var nuevoPaciente = new Patients
+                    {
+                        UserID = nuevoUsuario.UserID, 
+                        BirthDate = request.BirthDate.Value 
+                    };
+
+                    _context.Patients.Add(nuevoPaciente);
+                }
+                else if (request.Role == "Doctor")
+                {
+                    var nuevoDoctor = new Doctors
+                    {
+                        UserID = nuevoUsuario.UserID,
+                        Specialty = request.Specialty
+                    };
+
+                    _context.Doctors.Add(nuevoDoctor);
+                }
+
+                _context.SaveChanges();
+                TempData["SuccessMessage"] = "Usuario creado con éxito.";
                 return RedirectToAction("Register");
-
             }
-            return View("Register", usuario);
-           
+
+            return View(request);
         }
+
 
         public ActionResult RegainAccess()
         {
             return View();
         }
 
+        [HttpGet]
+        public ActionResult SignOut()
+        {
+            HttpContext.Session.Remove("user");
+            HttpContext.Session.Remove("options");
 
+            return RedirectToAction("Login", "Auth");
+        }
 
     }
 }

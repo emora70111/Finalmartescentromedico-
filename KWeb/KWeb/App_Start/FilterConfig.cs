@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using KWeb.Utils;
+using System.Web;
 using System.Web.Mvc;
 
 namespace KWeb
@@ -8,6 +9,7 @@ namespace KWeb
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
             filters.Add(new HandleErrorAttribute());
+            filters.Add(new AuthFilter());
         }
     }
 }

@@ -1,0 +1,85 @@
+﻿
+@model KWeb.Models.Request.UserRequest
+
+
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createUserModalLabel">Registrar Usuario</h5>
+            </div>
+            <div class="modal-body">          
+                @using (Html.BeginForm("Register", "Users", FormMethod.Post, new { @class = "needs-validation" }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <!-- Campos generales -->
+                    <div class="mb-3">
+                        <label for="FirstName" class="form-label">Nombre</label>
+                        @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="LastName" class="form-label">Apellido</label>
+                        @Html.TextBoxFor(m => m.LastName, new { @class = "form-control", required = "required" })
+                        @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">Correo Electrónico</label>
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", required = "required" })
+                        @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Phone" class="form-label">Número de Teléfono</label>
+                        @Html.TextBoxFor(m => m.Phone, new { @class = "form-control", type = "text" })
+                        @Html.ValidationMessageFor(m => m.Phone, "", new { @class = "text-danger" })
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="Password" class="form-label">Contraseña</label>
+                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", required = "required", minlength = "8" })
+                        @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                    </div>
+
+                    <!-- Selector de rol -->
+                    <div class="mb-3">
+                        <label for="Role" class="form-label">Rol</label>
+                        @Html.DropDownListFor(m => m.Role, new SelectList(new[] {
+                            new { Value = "", Text = "" },
+                            new { Value = Enum.GetName(typeof(KWeb.Utils.RolesEnum), KWeb.Utils.RolesEnum.Administrator), Text = "Administrador" },
+                            new { Value = Enum.GetName(typeof(KWeb.Utils.RolesEnum), KWeb.Utils.RolesEnum.Patient), Text = "Paciente" },
+                            new { Value = Enum.GetName(typeof(KWeb.Utils.RolesEnum), KWeb.Utils.RolesEnum.Doctor), Text = "Doctor" }
+                        }, "Value", "Text"), new { @class = "form-control", required = "required", id = "roleSelector" })
+                        @Html.ValidationMessageFor(m => m.Role, "", new { @class = "text-danger" })
+                    </div>
+
+
+                    <div id="doctorFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="Specialty" class="form-label">Especialidad</label>
+                            @Html.TextBoxFor(m => m.Specialty, new { @class = "form-control", required = "required" })
+                            @Html.ValidationMessageFor(m => m.Specialty, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div id="patientFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="BirthDate" class="form-label">Fecha de Nacimiento</label>
+                            @Html.TextBoxFor(m => m.BirthDate, new { @class = "form-control", type = "date", required = "required" })
+                            @Html.ValidationMessageFor(m => m.BirthDate, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-8 fs-4 mb-4">Registrar</button>                     
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+ 
+
+

@@ -1,0 +1,139 @@
+﻿@model List<KWeb.ModelsDB.Doctors>
+
+@{
+    ViewData["Title"] = "Main";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+
+
+@section Styles {
+ 
+}
+<section class="page-title bg-1">
+    <div class="overlay"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="block text-center">
+                    <span class="text-white">Sobre Nosotros</span>
+                    <h1 class="text-capitalize mb-5 text-lg">Consultorio Vida y Salud</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section about-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <h2 class="text-primary">Propósito</h2>
+            </div>
+            <div class="col-lg-8">
+                <p>Brindar atención médica de calidad a través de una plataforma digital fácil de usar, ofreciendo acceso rápido a consultas, servicios de salud y seguimiento en tiempo real.</p>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-lg-4">
+                <h2 class="text-primary">Funciones</h2>
+            </div>
+            <div class="col-lg-8">
+                <p>La plataforma ofrece funciones como agendar citas médicas, consultar resultados de exámenes, acceso a la historia clínica digital y comunicación directa con profesionales de la salud.</p>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-lg-4">
+                <h2 class="text-primary">Misión</h2>
+            </div>
+            <div class="col-lg-8">
+                <p>Proveer atención médica accesible, eficiente y de calidad, a través de tecnología de vanguardia que permita a los pacientes gestionar su salud desde la comodidad de su hogar.</p>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-lg-4">
+                <h2 class="text-primary">Servicios</h2>
+            </div>
+            <div class="col-lg-8">
+                <p>Ofrecemos una variedad de servicios médicos, incluyendo consultas virtuales, revisión de resultados de laboratorio, seguimiento de tratamientos y acceso a especialistas en diversas áreas.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="fetaure-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-6">
+                <div class="about-block-item mb-5 mb-lg-0">
+                    <img src="images/about/about-1.jpg" alt="" class="img-fluid w-100">
+                    <h4 class="mt-3">Consultas Médicas en Línea</h4>
+                    <p>Accede a atención médica desde la comodidad de tu hogar a través de consultas virtuales con nuestros especialistas.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="about-block-item mb-5 mb-lg-0">
+                    <img src="images/about/about-2.jpg" alt="" class="img-fluid w-100">
+                    <h4 class="mt-3">Seguimiento de Tratamientos</h4>
+                    <p>Realiza el seguimiento de tu tratamiento con los profesionales de la salud para asegurar una recuperación eficiente.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="about-block-item mb-5 mb-lg-0">
+                    <img src="images/about/about-3.jpg" alt="" class="img-fluid w-100">
+                    <h4 class="mt-3">Acceso a Exámenes Médicos</h4>
+                    <p>Consulta los resultados de tus exámenes médicos en línea, con recomendaciones personalizadas según los resultados.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="about-block-item">
+                    <img src="images/about/about-4.jpg" alt="" class="img-fluid w-100">
+                    <h4 class="mt-3">Comunicación Directa con Especialistas</h4>
+                    <p>Interactúa directamente con nuestros médicos a través de chat en tiempo real, para resolver dudas y obtener orientación.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section team">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="section-title text-center">
+                    <h2 class="mb-4 text-primary">Conoce a Nuestros Especialistas</h2>
+                    <div class="divider mx-auto my-4"></div>
+                    <p>Profesionales altamente calificados para brindarte la mejor atención médica.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            @foreach (var doctor in Model)
+            {
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="team-block">
+                        <img src="images/team/4.jpg" alt="" class="img-fluid w-100">
+                        <div class="content">
+                            <h4 class="mt-4 mb-0"><a href="">Dr. @doctor.Users.FirstName</a></h4>
+                            <p>@doctor.Specialty</p>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</section>
+ 
+@section Scripts {
+    @{
+
+
+    }
+}

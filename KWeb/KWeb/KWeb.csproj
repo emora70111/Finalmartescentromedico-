@@ -57,6 +57,8 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -124,29 +126,63 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\CitasController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\AppointmentsController.cs" />
     <Compile Include="Controllers\AuthController.cs" />
+    <Compile Include="Controllers\MainController.cs" />
+    <Compile Include="Controllers\MedicalHistoryController.cs" />
+    <Compile Include="Controllers\SchedulesController.cs" />
+    <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202411170137541_InitialCreate.cs" />
-    <Compile Include="Migrations\202411170137541_InitialCreate.Designer.cs">
-      <DependentUpon>202411170137541_InitialCreate.cs</DependentUpon>
+    <Compile Include="ModelsDB\Appointments.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202411192219545_ModuloCitas.cs" />
-    <Compile Include="Migrations\202411192219545_ModuloCitas.Designer.cs">
-      <DependentUpon>202411192219545_ModuloCitas.cs</DependentUpon>
+    <Compile Include="ModelsDB\Doctors.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="ModelsDB\ApplicationDbContext.cs" />
-    <Compile Include="ModelsDB\Cita.cs" />
-    <Compile Include="ModelsDB\Doctor.cs" />
-    <Compile Include="ModelsDB\EmailService.cs" />
-    <Compile Include="ModelsDB\NotificationService.cs" />
-    <Compile Include="ModelsDB\Paciente.cs" />
-    <Compile Include="ModelsDB\Usuario.cs" />
+    <Compile Include="ModelsDB\MedicalHistory.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModelsDB\Model1.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModelsDB\Model1.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModelsDB\Model1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Model1.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="ModelsDB\Notifications.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModelsDB\Patients.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModelsDB\Schedules.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ModelsDB\Users.cs">
+      <DependentUpon>Model1.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Request\AppointmentRequest.cs" />
+    <Compile Include="Models\Request\UserLoginRequest.cs" />
+    <Compile Include="Models\Request\UserRegisterRequest.cs" />
+    <Compile Include="Models\Request\UserRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\AppointmentsStatusEnum.cs" />
+    <Compile Include="Utils\AuthFilter.cs" />
+    <Compile Include="Utils\RoleOptions.cs" />
+    <Compile Include="Utils\RolesEnum.cs" />
+    <Compile Include="ViewModels\AppointmentsOfPatientViewModel.cs" />
+    <Compile Include="ViewModels\ScheduleViewModel.cs" />
+    <Compile Include="ViewModels\UsersViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-grid.css" />
@@ -168,12 +204,29 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="ModelsDB\Model1.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>Model1.edmx</DependentUpon>
+      <LastGenOutput>Model1.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="ModelsDB\Model1.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>Model1.edmx</DependentUpon>
+      <LastGenOutput>Model1.cs</LastGenOutput>
+    </Content>
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
     <Content Include="Scripts\bootstrap.esm.min.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <EntityDeploy Include="ModelsDB\Model1.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>Model1.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="ModelsDB\Model1.edmx.diagram">
+      <DependentUpon>Model1.edmx</DependentUpon>
+    </Content>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -185,6 +238,11 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.js" />
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Styles\css\custom\Appointments.css" />
+    <Content Include="Styles\css\custom\Consultations.css" />
+    <Content Include="Styles\css\custom\Layout.css" />
+    <Content Include="Styles\css\custom\MedicalHistory.css" />
+    <Content Include="Styles\css\custom\Patients.css" />
     <Content Include="Styles\css\style.css" />
     <Content Include="Styles\images\about\05.png" />
     <Content Include="Styles\images\about\1.png" />
@@ -261,9 +319,6 @@
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Home\About.cshtml" />
-    <Content Include="Views\Home\Contact.cshtml" />
-    <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Auth\Login.cshtml" />
     <Content Include="Views\Auth\Register.cshtml" />
     <Content Include="Views\Auth\RegainAccess.cshtml" />
@@ -305,16 +360,23 @@
     <Content Include="Styles\scss\_mixins.scss" />
     <Content Include="Styles\scss\_typography.scss" />
     <Content Include="Styles\scss\_variables.scss" />
-    <Content Include="Views\Shared\appoiment.cshtml" />
+    <Content Include="Views\Shared\_BaseLayout.cshtml" />
+    <Content Include="Views\Appointments\Agendar.cshtml" />
+    <Content Include="Views\Appointments\MisCitas.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Citas\Agendar.cshtml" />
-    <Content Include="Views\Citas\MisCitas.cshtml" />
-    <Content Include="Views\Shared\_LayoutApp.cshtml" />
+    <Content Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
+    <Content Include="Views\Main\Index.cshtml" />
+    <Content Include="Views\Users\Index.cshtml" />
+    <Content Include="Views\Appointments\OfDoctor.cshtml" />
+    <Content Include="Views\Main\AcercaDe.cshtml" />
+    <Content Include="Views\MedicalHistory\Index.cshtml" />
+    <Content Include="Views\Schedules\Index.cshtml" />
+    <Content Include="Views\Appointments\OfPatient.cshtml" />
+    <Content Include="Views\Users\Partials\_CreateUserModal.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
-    <Folder Include="Views\Usuario\" />
+    <Folder Include="Models\Response\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
@@ -344,12 +406,7 @@
     <Content Include="Scripts\jquery-3.7.0.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202411170137541_InitialCreate.resx">
-      <DependentUpon>202411170137541_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202411192219545_ModuloCitas.resx">
-      <DependentUpon>202411192219545_ModuloCitas.cs</DependentUpon>
-    </EmbeddedResource>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

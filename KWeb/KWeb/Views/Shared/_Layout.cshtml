@@ -1,697 +1,77 @@
-﻿<!DOCTYPE html>
-<html lang="zxx">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="description" content="Orbitor,business,company,agency,modern,bootstrap4,tech,software">
-    <meta name="author" content="themefisher.com">
+﻿@using Newtonsoft.Json;
+@using KWeb.Utils;
 
-    <title>Novena- Health & Care Medical template</title>
+@{
+    Layout = "~/Views/Shared/_BaseLayout.cshtml";
+}
+@section BaseStyles {
 
-    <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
+    <link rel="stylesheet" href="~/Styles/css/custom/Layout.css">
 
-    <!-- bootstrap.min css -->
-    <link rel="stylesheet" href="~/Styles/plugins/bootstrap/css/bootstrap.min.css">
-    <!-- Icon Font Css -->
-    <link rel="stylesheet" href="~/Styles/plugins/icofont/icofont.min.css">
-    <!-- Slick Slider  CSS -->
-    <link rel="stylesheet" href="~/Styles/plugins/slick-carousel/slick/slick.css">
-    <link rel="stylesheet" href="~/Styles/plugins/slick-carousel/slick/slick-theme.css">
+    @RenderSection("Styles", required: false)
+}
 
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="~/Styles/css/style.css">
+<div class="app-container d-flex">
+    <nav>
+        <ul class="menu">
+            @{
+                var json = HttpContext.Current.Session["options"] as string;
+   
+                var options = string.IsNullOrEmpty(json)
+                    ? new RoleOption()
+                    : JsonConvert.DeserializeObject<RoleOption>(json);
 
-</head>
-<div id="content">
-    @RenderBody() 
-</div>
-<body id="top">
+                 foreach (Option option in options.Options)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="@option.Url">@option.Name</a>
+                    </li>
+                }
+            }
+            <li class="nav-item fixed-bottom">
+                <a class="nav-link" href="/auth/signout">Cerrar sesión</a>
+            </li>
+        </ul>
 
-    <header>
-        <div class="header-top-bar">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-6">
-                        <ul class="top-bar-info list-inline-item pl-0 mb-0">
-                            <li class="list-inline-item"><a href="mailto:support@gmail.com"><i class="icofont-support-faq mr-2"></i>support@medicoscontigo.com</a></li>
-                            <li class="list-inline-item"><i class="icofont-location-pin mr-2"></i>Avenida 2, Calle 5, San José, Costa Rica</li>
-                        </ul>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="text-lg-right top-right-bar mt-2 mt-lg-0">
-                            <a href="tel:+23-345-67890">
-                                <span>Llama Ahora : </span>
-                                <span class="h4">823-4565-13456</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <nav class="navbar navbar-expand-lg navigation" id="navbar">
-            <div class="container">
-                <a class="navbar-brand" href="index.html">
-                    <img src="images/logo.png" alt="" class="img-fluid">
-                </a>
+    </nav>
 
-                <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarmain" aria-controls="navbarmain" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="icofont-navigation-menu"></span>
+    <main>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div id="message" class="alert alert-success d-flex justify-content-between">
+                <span>@TempData["SuccessMessage"]</span>
+                <button type="button" class="btn p-0" aria-label="Close" onclick="dismissMessage()">
+                    <i class="fas fa-times"></i>
                 </button>
-
-                <div class="collapse navbar-collapse" id="navbarmain">
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="index.html">Home</a>
-                        </li>
-                        <li class="nav-item"><a class="nav-link" href="#" id="aboutLink">About</a></li>
-                        <li class="nav-item"><a class="nav-link" href="service.html">Services</a></li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="department.html" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Department <i class="icofont-thin-down"></i></a>
-                            <ul class="dropdown-menu" aria-labelledby="dropdown02">
-                                <li><a class="dropdown-item" href="department.html">Departments</a></li>
-                                <li><a class="dropdown-item" href="department-single.html">Department Single</a></li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="doctor.html" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Doctors <i class="icofont-thin-down"></i></a>
-                            <ul class="dropdown-menu" aria-labelledby="dropdown03">
-                                <li><a class="dropdown-item" href="doctor.html">Doctors</a></li>
-                                <li><a class="dropdown-item" href="doctor-single.html">Doctor Single</a></li>
-                                <li><a class="dropdown-item" href="~/Views/Shared/appoiment.cshtml">Appoinment</a></li>
-                            </ul>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="blog-sidebar.html" id="dropdown05" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Blog <i class="icofont-thin-down"></i></a>
-                            <ul class="dropdown-menu" aria-labelledby="dropdown05">
-                                <li><a class="dropdown-item" href="blog-sidebar.html">Blog with Sidebar</a></li>
-
-                                <li><a class="dropdown-item" href="blog-single.html">Blog Single</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-                    </ul>
-                </div>
             </div>
-        </nav>
-    </header>
+        }
 
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div id="message" class="alert alert-danger d-flex justify-content-between align-items-center">
+                <span>@TempData["ErrorMessage"]</span>
+                <button type="button" class="btn p-0" aria-label="Close" onclick="dismissMessage()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        }
 
+        <div style="overflow-y: auto; max-height: 100vh;">
+            @RenderBody()
+        </div>
 
-
-    <!-- Slider Start -->
-    <section class="banner">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 col-md-12 col-xl-7">
-                    <div class="block">
-                        <div class="divider mb-3"></div>
-                        <span class="text-uppercase text-sm letter-spacing ">¡Encontraras a los mejores médicos aquí!</span>
-                        <h1 class="mb-3 mt-3">Médicos Contigo</h1>
-
-                        <p class="mb-4 pr-5">
-                            Bienvenido al Centro Médicos Contigo, donde nos especializamos en brindar atención médica integral y de calidad, con un equipo de profesionales comprometidos con el bienestar de nuestros pacientes>
-                            <a href="~/Views/Shared/appoiment.cshtml" target="_blank" class="btn btn-main-2 btn-icon btn-round-full">Agenda una cita <i class="icofont-simple-right ml-2  "></i></a>
+    </main>
 </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="features">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="feature-block d-lg-flex">
-                        <div class="feature-item mb-5 mb-lg-0">
-                            <div class="feature-icon mb-4">
-                                <i class="icofont-surgeon-alt"></i>
-                            </div>
-                            <span>Estamos las 24 del día</span>
-                            <h4 class="mb-3">Citas en línea </h4>
-                                <p class="mb-4">Obtén soporte las 24 horas para emergencias. Hemos introducido el principio de la medicina familiar.</p>
-                            <a href="~/Views/Shared/appoiment.cshtml" class="btn btn-main btn-round-full">Agenda una cita</a>
-                        </div>
 
-                        <div class="feature-item mb-5 mb-lg-0">
-                            <div class="feature-icon mb-4">
-                                <i class="icofont-ui-clock"></i>
-                            </div>
-                            <span>Horario de trabajo</span>
-                            <h4 class="mb-3">Horarios</h4>
-                            <ul class="w-hours list-unstyled">
-                                <li class="d-flex justify-content-between">Domingo - Miércoles : <span>8:00 - 17:00</span></li>
-                                <li class="d-flex justify-content-between">Martes - Viernes : <span>9:00 - 17:00</span></li>
-                                <li class="d-flex justify-content-between">Sábado - Domingo : <span>10:00 - 17:00</span></li>
-                            </ul>
-                        </div>
+@section BaseScripts {
+    @RenderSection("Scripts", required: false)
 
-                        <div class="feature-item mb-5 mb-lg-0">
-                            <div class="feature-icon mb-4">
-                                <i class="icofont-support"></i>
-                            </div>
-                            <span>Casos de emergencia</span>
-                            <h4 class="mb-3">1-800-700-6200</h4>
-                            <p>Obtén soporte en tiempo real para emergencias. Conéctate con nosotros para cualquier urgencia.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section about">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-4 col-sm-6">
-                    <div class="about-img">
-                        <img src="images/about/img-1.jpg" alt="" class="img-fluid">
-                        <img src="images/about/img-2.jpg" alt="" class="img-fluid mt-4">
-                    </div>
-                </div>
-                <div class="col-lg-4 col-sm-6">
-                    <div class="about-img mt-4 mt-lg-0">
-                        <img src="images/about/img-3.jpg" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="about-content pl-4 mt-4 mt-lg-0">
-                        <h2 class="title-color">Cuidado personal <br>y vida saludable</h2>
-                        <p class="mt-4 mb-5">Ofrecemos atención médica de alta calidad, con un enfoque integral y personalizado para el bienestar de nuestros pacientes. Nuestro objetivo es brindar soluciones efectivas y accesibles para mejorar la salud y calidad de vida de cada persona.</p>
-
-                        <a href="service.html" class="btn btn-main-2 btn-round-full btn-icon">Servicios<i class="icofont-simple-right ml-3"></i></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="cta-section ">
-        <div class="container">
-            <div class="cta position-relative">
-                <div class="row">
-                    <div class="col-lg-3 col-md-6 col-sm-6">
-                        <div class="counter-stat">
-                            <i class="icofont-doctor"></i>
-                            <span class="h3">58</span>k
-                            <p>Personas Felices</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-sm-6">
-                        <div class="counter-stat">
-                            <i class="icofont-flag"></i>
-                            <span class="h3">700</span>+
-                            <p>Cirugías Completadas</p>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6 col-sm-6">
-                        <div class="counter-stat">
-                            <i class="icofont-badge"></i>
-                            <span class="h3">40</span>+
-                            <p>Médicos Expertos</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-sm-6">
-                        <div class="counter-stat">
-                            <i class="icofont-globe"></i>
-                            <span class="h3">20</span>
-                            <p>Sucursales a Nivel Mundial</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="section service gray-bg">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-7 text-center">
-                    <div class="section-title">
-                        <h2>Atención al paciente premiada</h2>
-                        <div class="divider mx-auto my-4"></div>
-                        <p>Conozca más sobre nosotros, las necesidades de dolor, molestias, incidencias y cómo nuestras soluciones pueden ayudar.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-4 col-md-6 col-sm-6">
-                    <div class="service-item mb-4">
-                        <div class="icon d-flex align-items-center">
-                            <i class="icofont-laboratory text-lg"></i>
-                            <h4 class="mt-3 mb-3">Servicios de laboratorio</h4>
-                        </div>
-
-                        <div class="content">
-                            <p class="mb-4">Realizamos exámenes médicos de alta calidad para diagnóstico y monitoreo de la salud.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 col-sm-6">
-                    <div class="service-item mb-4">
-                        <div class="icon d-flex align-items-center">
-                            <i class="icofont-heart-beat-alt text-lg"></i>
-                            <h4 class="mt-3 mb-3">Enfermedades del corazón</h4>
-                        </div>
-                        <div class="content">
-                            <p class="mb-4">Ofrecemos atención especializada en el tratamiento de enfermedades cardíacas y prevención.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 col-sm-6">
-                    <div class="service-item mb-4">
-                        <div class="icon d-flex align-items-center">
-                            <i class="icofont-tooth text-lg"></i>
-                            <h4 class="mt-3 mb-3">Cuidado dental</h4>
-                        </div>
-                        <div class="content">
-                            <p class="mb-4">Proporcionamos servicios completos de odontología para mantener una sonrisa saludable.</p>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="col-lg-4 col-md-6 col-sm-6">
-                    <div class="service-item mb-4">
-                        <div class="icon d-flex align-items-center">
-                            <i class="icofont-crutch text-lg"></i>
-                            <h4 class="mt-3 mb-3">Cirugía corporal</h4>
-                        </div>
-
-                        <div class="content">
-                            <p class="mb-4">Realizamos intervenciones quirúrgicas de alta precisión para el tratamiento de diversas afecciones.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 col-sm-6">
-                    <div class="service-item mb-4">
-                        <div class="icon d-flex align-items-center">
-                            <i class="icofont-brain-alt text-lg"></i>
-                            <h4 class="mt-3 mb-3">Cirugía neurológica</h4>
-                        </div>
-                        <div class="content">
-                            <p class="mb-4">Brindamos atención en neurocirugía para el tratamiento de trastornos del sistema nervioso.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-6 col-sm-6">
-                    <div class="service-item mb-4">
-                        <div class="icon d-flex align-items-center">
-                            <i class="icofont-dna-alt-1 text-lg"></i>
-                            <h4 class="mt-3 mb-3">Ginecología</h4>
-                        </div>
-                        <div class="content">
-                            <p class="mb-4">Cuidamos la salud de la mujer a través de consultas, tratamientos y procedimientos ginecológicos.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="section appoinment">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 ">
-                    <div class="appoinment-content">
-                        <img src="images/about/img-3.jpg" alt="" class="img-fluid">
-                        <div class="emergency">
-                            <h2 class="text-lg"><i class="icofont-phone-circle text-lg"></i>+23 345 67980</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 col-md-10 ">
-                    <div class="appoinment-wrap mt-5 mt-lg-0">
-                        <h2 class="mb-2 title-color">Agenda una cita</h2>
-                        <p class="mb-4">Llame a nuestro equipo de expertos para reservar su cita médica y obtener el mejor cuidado para su salud. Estamos aquí para ayudarlo en todo lo que necesite.</p>
-                        <form id="#" class="appoinment-form" method="post" action="#">
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <select class="form-control" id="exampleFormControlSelect1">
-                                            <option>Elegir Departamento</option>
-                                            <option>Consultas Generales</option>
-                                            <option>Emergencias 24/7</option>
-                                            <option>Atención Pediátrica</option>
-                                            <option>Exámenes de Laboratorio</option>
-                                            <option>Cirugía Menor</option>
-                                            <option>Consejería de Salud Mental</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <select class="form-control" id="exampleFormControlSelect2">
-                                            <option>Seleccionar Doctores</option>
-                                            <option>Dr. Juan Pérez (Pediatra)</option>
-                                            <option>Dra. Laura Gómez (Urgencias)</option>
-                                            <option>Dr. Luis Rodríguez (Cirujano)</option>
-                                            <option>Dra. Ana Díaz (Generalista)</option>
-                                            <option>Dr. Pedro Martínez (Cardiólogo)</option>
-                                            <option>Dra. Isabel Fernández (Psiquiatra)</option>
-                                           </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <input name="date" id="date" type="text" class="form-control" placeholder="dd/mm/yyyy">
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <input name="time" id="time" type="text" class="form-control" placeholder="Hora">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <input name="name" id="name" type="text" class="form-control" placeholder="Nombre completo">
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6">
-                                    <div class="form-group">
-                                        <input name="phone" id="phone" type="Number" class="form-control" placeholder="Phone Number">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group-2 mb-4">
-                                <textarea name="message" id="message" class="form-control" rows="6" placeholder="Escribe tu consulta"></textarea>
-                            </div>
-
-                            <a class="btn btn-main btn-round-full" href="~/Views/Shared/appoiment.cshtml">Agenda una cita <i class="icofont-simple-right ml-2  "></i></a>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="section testimonial-2 gray-bg">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-7">
-                    <div class="section-title text-center">
-                        <h2>Hemos atendido a más de 5000 pacientes</h2>
-                        <div class="divider mx-auto my-4"></div>
-                        <p>Conozca más sobre nuestros servicios de atención médica, siempre enfocados en brindar lo mejor para nuestros pacientes y sus necesidades.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12 testimonial-wrap-2">
-                    <div class="testimonial-block style-2  gray-bg">
-                        <i class="icofont-quote-right"></i>
-
-                        <div class="testimonial-thumb">
-                            <img src="images/team/test-thumb1.jpg" alt="" class="img-fluid">
-                        </div>
-
-                        <div class="client-info ">
-                            <h4>¡Servicio increíble!</h4>
-                            <span>John Partho</span>
-                            <p>
-                                Brindan un excelente servicio en nuestras instalaciones. Todo es atendido con el más alto nivel de profesionalismo y cuidado para nuestros pacientes.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="testimonial-block style-2  gray-bg">
-                        <div class="testimonial-thumb">
-                            <img src="images/team/test-thumb2.jpg" alt="" class="img-fluid">
-                        </div>
-
-                        <div class="client-info">
-                            <h4>¡Doctores expertos!</h4>
-                            <span>Mullar Sarth</span>
-                            <p>
-                                Nuestros médicos son altamente calificados y comprometidos en ofrecer atención de calidad.
-                            </p>
-                        </div>
-
-                        <i class="icofont-quote-right"></i>
-                    </div>
-
-                    <div class="testimonial-block style-2  gray-bg">
-                        <div class="testimonial-thumb">
-                            <img src="images/team/test-thumb3.jpg" alt="" class="img-fluid">
-                        </div>
-
-                        <div class="client-info">
-                            <h4>¡Buen soporte!</h4>
-                            <span>Kolis Mullar</span>
-                            <p>
-                                Brindan un excelente servicio, instalaciones adecuadas y un apoyo constante a nuestros pacientes.
-                            </p>
-                        </div>
-
-                        <i class="icofont-quote-right"></i>
-                    </div>
-
-                    <div class="testimonial-block style-2  gray-bg">
-                        <div class="testimonial-thumb">
-                            <img src="images/team/test-thumb4.jpg" alt="" class="img-fluid">
-                        </div>
-
-                        <div class="client-info">
-                            <h4>¡Buen ambiente!</h4>
-                            <span>Partho Sarothi</span>
-                            <p class="mt-4">
-                                Ofrecen un ambiente cómodo y amigable para todos, lo que hace que la experiencia sea más agradable.
-                            </p>
-                        </div>
-                        <i class="icofont-quote-right"></i>
-                    </div>
-
-                    <div class="testimonial-block style-2  gray-bg">
-                        <div class="testimonial-thumb">
-                            <img src="images/team/test-thumb1.jpg" alt="" class="img-fluid">
-                        </div>
-
-                        <div class="client-info">
-                            <h4>¡Servicio moderno!</h4>
-                            <span>Kolis Mullar</span>
-                            <p>
-                                Un servicio innovador y actualizado, siempre a la vanguardia para brindar lo mejor a nuestros pacientes.
-                            </p>
-                        </div>
-                        <i class="icofont-quote-right"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="section clients">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-7">
-                    <div class="section-title text-center">
-                        <h2>Socios que nos apoyan</h2>
-                        <div class="divider mx-auto my-4"></div>
-                        <p>Conozca más sobre las necesidades de nuestros pacientes. Siempre estamos comprometidos con proporcionar un servicio médico excepcional.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="container">
-            <div class="row clients-logo">
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/1.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/2.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/3.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/4.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/5.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/6.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/3.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/4.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/5.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-                <div class="col-lg-2">
-                    <div class="client-thumb">
-                        <img src="images/about/6.png" alt="" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- footer Start -->
-    <footer class="footer section gray-bg">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 mr-auto col-sm-6">
-                    <div class="widget mb-5 mb-lg-0">
-                        <div class="logo mb-4">
-                            <img src="images/logo.png" alt="" class="img-fluid">
-                        </div>
-                        <p>Nuestro compromiso es brindar atención médica de calidad, enfocada en la salud y bienestar de cada paciente. Trabajamos día a día para ofrecer soluciones efectivas que mejoren su calidad de vida.</p>
-
-                        <ul class="list-inline footer-socials mt-4">
-                            <li class="list-inline-item"><a href="https://www.facebook.com/themefisher"><i class="icofont-facebook"></i></a></li>
-                            <li class="list-inline-item"><a href="https://twitter.com/themefisher"><i class="icofont-twitter"></i></a></li>
-                            <li class="list-inline-item"><a href="https://www.pinterest.com/themefisher/"><i class="icofont-linkedin"></i></a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="col-lg-2 col-md-6 col-sm-6">
-                    <div class="widget mb-5 mb-lg-0">
-                        <h4 class="text-capitalize mb-3">Departamentos</h4>
-                        <div class="divider mb-4"></div>
-
-                        <ul class="list-unstyled footer-menu lh-35">
-                            <li><a href="#">Cirugía </a></li>
-                            <li><a href="#">Salud de la Mujer</a></li>
-                            <li><a href="#">Radiología</a></li>
-                            <li><a href="#">Cardiología</a></li>
-                            <li><a href="#">Medicina</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="col-lg-2 col-md-6 col-sm-6">
-                    <div class="widget mb-5 mb-lg-0">
-                        <h4 class="text-capitalize mb-3">Soporte</h4>
-                        <div class="divider mb-4"></div>
-
-                        <ul class="list-unstyled footer-menu lh-35">
-                            <li><a href="#">Términos y Condiciones</a></li>
-                            <li><a href="#">Política de Privacidad</a></li>
-                            <li><a href="#">Soporte de la Empresa </a></li>
-                            <li><a href="#">Preguntas Frecuentes</a></li>
-                            <li><a href="#">Licencia de la Empresa</a></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="col-lg-3 col-md-6 col-sm-6">
-                    <div class="widget widget-contact mb-5 mb-lg-0">
-                        <h4 class="text-capitalize mb-3">Contáctanos</h4>
-                        <div class="divider mb-4"></div>
-
-                        <div class="footer-contact-block mb-4">
-                            <div class="icon d-flex align-items-center">
-                                <i class="icofont-email mr-3"></i>
-                                <span class="h6 mb-0">
-                                    Soporte disponible las 24 horas del día, los 7 días de la semana
-                                </span>
-                            </div>
-                            <h4 class="mt-2"><a href="tel:+23-345-67890">Support@medicoscontigo.com</a></h4>
-                        </div>
-
-                        <div class="footer-contact-block">
-                            <div class="icon d-flex align-items-center">
-                                <i class="icofont-support mr-3"></i>
-                                <span class="h6 mb-0">De lunes a viernes : 08:30 - 18:00</span>
-                            </div>
-                            <h4 class="mt-2"><a href="tel:+23-345-67890">+23-456-6588</a></h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="footer-btm py-4 mt-5">
-                <div class="row align-items-center justify-content-between">
-                    <div class="col-lg-6">
-                        <div class="copyright">
-                            &copy; Copyright Reservado para <span class="text-color"></span> <a href="https://themefisher.com/" target="_blank">Médicos Contigo</a>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="subscribe-form text-lg-right mt-5 mt-lg-0">
-                            <form action="#" class="subscribe">
-                                <input type="text" class="form-control" placeholder="Tu dirección de email">
-                                <a href="#" class="btn btn-main-2 btn-round-full">Subscribirse</a>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-4">
-                        <a class="backtop js-scroll-trigger" href="#top">
-                            <i class="icofont-long-arrow-up"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-
-
-    <!--
-    Essential Scripts
-    =====================================-->
-    <!-- Main jQuery -->
-    <script src="plugins/jquery/jquery.js"></script>
-    <!-- Bootstrap 4.3.2 -->
-    <script src="plugins/bootstrap/js/popper.js"></script>
-    <script src="plugins/bootstrap/js/bootstrap.min.js"></script>
-    <script src="plugins/counterup/jquery.easing.js"></script>
-    <!-- Slick Slider -->
-    <script src="plugins/slick-carousel/slick/slick.min.js"></script>
-    <!-- Counterup -->
-    <script src="plugins/counterup/jquery.waypoints.min.js"></script>
-
-    <script src="plugins/shuffle/shuffle.min.js"></script>
-    <script src="plugins/counterup/jquery.counterup.min.js"></script>
-
-
-
-    <!-- Google Map -->
-    <!--<script src="plugins/google-map/map.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkeLMlsiwzp6b3Gnaxd86lvakimwGA6UA&callback=initMap"></script>-->
-
-    <script src="js/script.js"></script>
-    <script src="js/contact.js"></script>
-
-</body>
-</html>
-
-
-
-
+    <script>
+        function dismissMessage() {
+            var messageElement = document.getElementById("message");
+            if (messageElement) {
+                messageElement.className = "d-none";
+            }
+        }
+    </script>
+}

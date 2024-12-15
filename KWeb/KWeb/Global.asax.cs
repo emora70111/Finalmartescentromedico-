@@ -17,7 +17,7 @@ namespace KWeb
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-            NotificacionService.Iniciar();
+            //NotificacionService.Iniciar();
         }
     }
 }
