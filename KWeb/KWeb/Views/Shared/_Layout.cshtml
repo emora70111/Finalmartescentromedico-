@@ -13,7 +13,7 @@
 
 <div class="app-container d-flex">
     <nav>
-        <ul class="menu">
+        <ul class="menu d-flex flex-column h-100">
             @{
                 var json = HttpContext.Current.Session["options"] as string;
    
@@ -28,7 +28,7 @@
                     </li>
                 }
             }
-            <li class="nav-item fixed-bottom">
+            <li class="mt-auto">
                 <a class="nav-link" href="/auth/signout">Cerrar sesión</a>
             </li>
         </ul>
@@ -73,5 +73,7 @@
                 messageElement.className = "d-none";
             }
         }
+
+   
     </script>
 }

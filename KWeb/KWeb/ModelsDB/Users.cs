@@ -20,6 +20,7 @@ namespace KWeb.ModelsDB
             this.Doctors = new HashSet<Doctors>();
             this.Notifications = new HashSet<Notifications>();
             this.Patients = new HashSet<Patients>();
+            this.PasswordRecovery = new HashSet<PasswordRecovery>();
         }
     
         public int UserID { get; set; }
@@ -37,5 +38,7 @@ namespace KWeb.ModelsDB
         public virtual ICollection<Notifications> Notifications { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Patients> Patients { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<PasswordRecovery> PasswordRecovery { get; set; }
     }
 }

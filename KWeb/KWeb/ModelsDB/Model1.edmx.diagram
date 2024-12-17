@@ -20,6 +20,13 @@
         <AssociationConnector Association="CONSULTORIO_VIDA_SALUDModel.FK__Notificat__UserI__4BAC3F29" ManuallyRouted="false" />
         <AssociationConnector Association="CONSULTORIO_VIDA_SALUDModel.FK__Patients__UserID__3F466844" ManuallyRouted="false" />
         <AssociationConnector Association="CONSULTORIO_VIDA_SALUDModel.FK__MedicalHi__Appoi__4F7CD00D" />
+        <EntityTypeShape EntityType="CONSULTORIO_VIDA_SALUDModel.Shifts" Width="1.5" PointX="7.5" PointY="11.875" />
+        <AssociationConnector Association="CONSULTORIO_VIDA_SALUDModel.FK__Shifts__Schedule__45F365D3" />
+        <EntityTypeShape EntityType="CONSULTORIO_VIDA_SALUDModel.Blocks" Width="1.5" PointX="9.75" PointY="12.125" />
+        <AssociationConnector Association="CONSULTORIO_VIDA_SALUDModel.FK__Blocks__ShiftID__4AB81AF0" />
+        <AssociationConnector Association="CONSULTORIO_VIDA_SALUDModel.FK__Appointme__Block__5165187F" />
+        <EntityTypeShape EntityType="CONSULTORIO_VIDA_SALUDModel.PasswordRecovery" Width="1.5" PointX="3" PointY="11.375" />
+        <AssociationConnector Association="CONSULTORIO_VIDA_SALUDModel.FK__PasswordR__UserI__5CD6CB2B" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

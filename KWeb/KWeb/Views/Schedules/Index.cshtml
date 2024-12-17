@@ -22,7 +22,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center">
-    <h2 class="mb-3 text-primary">Disponibilidad</h2>
+    <h2 class="mb-3 text-primary">Tu Horario</h2>
     <button style="background-color: var(--primary-color);"
             class="btn btn-primary"
             data-toggle="modal"
@@ -30,84 +30,171 @@
         Configurar
     </button>
 </div>
+@{ Html.RenderPartial("Partials/_CreateScheduleModal"); }
 
-<!-- Modal -->
-<div class="modal fade" id="addAvailabilityModal" tabindex="-1" aria-labelledby="addAvailabilityModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addAvailabilityModalLabel">Nueva Disponibilidad</h5>
-            </div>
-            <form method="post" action="@Url.Action("Configure", "Schedules")">
-                <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <label for="DayOfWeek">Día de la semana</label>
-                        <select name="DayOfWeek" class="form-control" required>
-                            <option value="" disabled selected>Seleccione un día</option>
-                            <option value="Monday">Lunes</option>
-                            <option value="Tuesday">Martes</option>
-                            <option value="Wednesday">Miércoles</option>
-                            <option value="Thursday">Jueves</option>
-                            <option value="Friday">Viernes</option>
-                            <option value="Saturday">Sábado</option>
-                            <option value="Sunday">Domingo</option>
-                        </select>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="StartTime">Hora de inicio</label>
-                        <input name="StartTime" id="StartTime" type="text" class="form-control" placeholder="Seleccione la hora de inicio" />
-                    </div>
-                    <div class="form-group">
-                        <label for="EndTime">Hora de fin</label>
-                        <input name="EndTime" id="EndTime" type="text" class="form-control" placeholder="Seleccione la hora de fin" disabled />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </div>
-            </form>
-        </div>
+<ul class="nav nav-tabs" id="calendarTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="calendar-tab" data-bs-toggle="tab" href="#calendar" role="tab" aria-controls="calendar" aria-selected="true">Calendario</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="table-tab" data-bs-toggle="tab" href="#table" role="tab" aria-controls="table" aria-selected="false">Tabla</a>
+    </li>
+</ul>
+
+<!-- Contenido de las pestañas -->
+<div class="tab-content" id="calendarTabContent">
+    <!-- Calendario -->
+    <div class="tab-pane fade show active" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="tab-pane fade" id="table" role="tabpanel" aria-labelledby="table-tab">
+        <!-- Aquí va la tabla vacía -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Dia</th>
+                    <th>Descripcion de turno</th>
+                    <th>Hora inicio</th>
+                    <th>Hora fin</th>
+                    @*<th>Acciones</th>*@
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="text-center">Disponibilidad no configurada</td>
+                    </tr>
+
+                }
+
+
+                @foreach (var schedule in Model)
+                {
+                    foreach (var shift in schedule.Shifts)
+                    {
+                        <tr>
+                            <td>@Enum.GetName(typeof(KWeb.Utils.Global.DaysOfWeek), schedule.DayOfWeek)</td>
+                            <td>@shift.Description</td>
+                            <td>@shift.StartTime</td>
+                            <td>@shift.EndTime</td>
+                            <!--<td>-->
+                                <!-- Icono de editar -->
+                                <!--<a href="javascript:void(0);" class="text-primary" data-toggle="modal" data-target="#editModal">
+                                    <i class="fas fa-edit"></i>
+                                </a>-->
+                                <!-- Icono de eliminar -->
+                                <!--<a href="javascript:void(0);" class="text-danger">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </td>-->
+                        </tr>
+                    }
+                }
+
+            </tbody>
+        </table>
     </div>
 </div>
-<!-- Calendario -->
-<div id="calendar"></div>
+@{ Html.RenderPartial("Partials/_ShowAppointmentModal"); }
+
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.js"></script>
 
-    <!-- Flatpickr JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    @*Tags Calendario | Tabla*@
+
+    <script>
+        const calendarTab = document.getElementById('calendar-tab');
+        const tableTab = document.getElementById('table-tab');
+        const calendarContent = document.getElementById('calendar');
+        const tableContent = document.getElementById('table');
+
+        function showTab(tab) {
+            // Eliminar la clase 'active' de todas las pestañas y contenido
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+
+            // Añadir la clase 'active' a la pestaña seleccionada y al contenido correspondiente
+            tab.classList.add('active');
+            const targetContent = document.querySelector(tab.getAttribute('href'));
+            targetContent.classList.add('show', 'active');
+        }
+
+        // Evento para cambiar a la pestaña de calendario
+        calendarTab.addEventListener('click', function (event) {
+            event.preventDefault(); // Prevenir el comportamiento por defecto de Bootstrap
+            showTab(calendarTab);
+
+            // Inicializar el calendario solo si no está inicializado
+            if (calendarContent.innerHTML === '') {
+                // Usar FullCalendar solo si el calendario está vacío
+                new FullCalendar.Calendar(calendarContent, {
+                    initialView: 'dayGridMonth',
+                    events: []  // Aquí puedes cargar los eventos si los tienes
+                }).render();
+            }
+        });
+
+        // Evento para cambiar a la pestaña de tabla
+        tableTab.addEventListener('click', function (event) {
+            event.preventDefault(); // Prevenir el comportamiento por defecto de Bootstrap
+            showTab(tableTab);
+        });
+
+    </script>
+
+    @*FullCalendar*@
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar-scheduler@5.3.0/main.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Mapeo de días de la semana a índices de FullCalendar
+            const calendarEl = document.getElementById('calendar');
+            @{
+                var targetDate = new DateTime(2024, 12, 16); // Cambia esto a la fecha que desees filtrar
+            }
+
             const DayOfWeekToIndex = {
-                monday: 1,
-                tuesday: 2,
-                wednesday: 3,
-                thursday: 4,
-                friday: 5,
-                saturday: 6,
-                sunday: 0
+                1: 1, // Lunes
+                2: 2, // Martes
+                3: 3, // Miércoles
+                4: 4, // Jueves
+                5: 5, // Viernes
+                6: 6, // Sábado
+                7: 0  // Domingo
             };
 
-            const calendarEl = document.getElementById('calendar');
             const events = [
+
                 @foreach (var schedule in Model)
                 {
-                    <text>
+                    foreach (var shift in schedule.Shifts)
                     {
-                        id: '@schedule.ScheduleID',
-                        title: '@schedule.Status',
-                        startTime: '@schedule.StartTime.ToString("hh\\:mm")',
-                        endTime: '@schedule.EndTime.ToString("hh\\:mm")',
-                        daysOfWeek: [DayOfWeekToIndex["@schedule.DayOfWeek".toLowerCase()]],
-                        color: '@schedule.Status' === 'Disponible' ? 'green' : 'red', // Asigna color dependiendo del estado
-                        textColor: 'white' 
-                    },
-                    </text>
+                        foreach (var block in shift.Blocks)
+                        {
+
+                              <text>
+                                {
+                                    id: '@schedule.ScheduleID',
+                                    startTime: '@block.BlockStartTime.ToString("hh\\:mm")',
+                                    endTime: '@block.BlockEndTime.ToString("hh\\:mm")',
+                                    daysOfWeek: [DayOfWeekToIndex[@schedule.DayOfWeek]],
+                                    color: 'sky',
+                                    textColor: 'white',
+                                        extendedProps: {
+                                        scheduleID: '@schedule.ScheduleID',
+                                        shiftID: '@shift.ShiftID',
+                                        blockID: '@block.BlockID'
+                                    }
+                                },
+                                </text>
+                            
+
+                        }
+
+                    }
                 }
             ];
 
@@ -122,119 +209,253 @@
                     right: 'timeGridWeek,timeGridDay'
                 },
                 events: events,
-                eventDrop: function (info) {
-                    const updatedEvent = {
-                        id: info.event.id,
-                        startTime: info.event.start.toISOString().split('T')[1],
-                        endTime: info.event.end.toISOString().split('T')[1],
-                        dayOfWeek: info.event.start.toLocaleString('en-us', { weekday: 'long' })
+                eventContent: function (info) {
+                    // Muestra solo el rango de horas (sin guion final)
+                    return {
+                        html: `
+                <div style="text-align:center;">
+                    ${info.event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    -
+                    ${info.event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+            `
                     };
-
-                    fetch('@Url.Action("UpdateSchedule", "Schedules")', {
-
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(updatedEvent),
-                    }).then(response => {
-                        if (!response.ok) {
-                            alert('No se pudo actualizar el horario');
-                        }
-                    });
                 },
-                eventClick: function (info) {
-                    if (confirm('¿Desea eliminar este horario?')) {
-                        fetch('@Url.Action("DeleteSchedule", "Schedules")/' + info.event.id, {
-                            method: 'POST',
-                        }).then(response => {
-                            if (response.ok) {
-                                info.event.remove();
-                            } else {
-                                alert('No se pudo eliminar el horario');
-                            }
-                        });
-                    }
-                }
+                //eventClick: function (info) {
+                //    // Llenar los datos en el modal
+                //    const modalTitle = document.getElementById('modalTitle');
+                //    const modalBody = document.getElementById('modalBody');
+ 
+                //    modalTitle.textContent = `Horario: ${info.event.title}`;
+                //    const startHour = new Date(info.event.startStr).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                //    const endHour = new Date(info.event.endStr).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+
+                //    modalBody.innerHTML = `
+                //        <p><strong>Dia:</strong> ${info.event.extendedProps.blockID}</p>
+                //        <p><strong>Horario:</strong> ${startHour} - ${endHour}</p>
+                //    `;                 
+
+                //    // Mostrar el modal
+                //    const eventModal = new bootstrap.Modal(document.getElementById('eventModal'));
+                //    eventModal.show();
+                //}
             });
 
             calendar.render();
         });
     </script>
 
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let startTimePicker, endTimePicker;
+        let startTimePicker, endTimePicker;
 
-            // Configuración base para Flatpickr
-            const flatpickrOptions = {
-                enableTime: true,
-                noCalendar: true,
-                dateFormat: "H:i",
-                time_24hr: true,
-                minuteIncrement: 30, // Solo permitir bloques de 30 minutos (:00, :30)
-            };
+        // Configuración base para Flatpickr
+        const flatpickrOptions = {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            minuteIncrement: 30, // Solo permitir bloques de 30 minutos (:00, :30)
+        };
 
-            // Inicializar Flatpickr para Hora de Inicio
-            startTimePicker = flatpickr("#StartTime", {
-                ...flatpickrOptions,
-                onChange: function (selectedDates, dateStr) {
-                    if (dateStr) {
-                        // Habilitar Hora de Fin al seleccionar Hora de Inicio
-                        document.getElementById("EndTime").disabled = false;
+        // Inicializar Flatpickr para Hora de Inicio
+        startTimePicker = flatpickr("#StartTime", {
+            ...flatpickrOptions,
+            onChange: function (selectedDates, dateStr) {
+                if (dateStr) {
+                    // Habilitar Hora de Fin al seleccionar Hora de Inicio
+                    const endTimeInput = document.getElementById("EndTime");
+                    endTimeInput.disabled = false;
 
-                        // Obtener la hora seleccionada de StartTime
-                        const startDate = new Date(selectedDates[0]);
+                    // Obtener la hora seleccionada de StartTime
+                    const startDate = new Date(selectedDates[0]);
 
-                        // Calcular la hora mínima posible para EndTime
-                        let startTimeStr = startDate.toTimeString().substring(0, 5);
-                        let endTimeStr = (startDate.getMinutes() === 30) ?
-                            `${startDate.getHours() + 1}:00` :
-                            `${startDate.getHours()}:30`;  // Si es :00, el siguiente es :30, si es :30, el siguiente es :00
+                    // Calcular la hora mínima posible para EndTime
+                    const startHour = startDate.getHours();
+                    const startMinutes = startDate.getMinutes();
 
-                        // Establecer el valor del campo EndTime
-                        endTimePicker.set({
-                            enableTime: true,
-                            noCalendar: true,
-                            dateFormat: "H:i",
-                            time_24hr: true,
-                            minTime: startTimeStr,  // Establecer el tiempo mínimo a partir de StartTime
-                            maxTime: "23:30",  // El tiempo máximo es hasta las 23:30
-                            disable: [
-                                { from: "00:00", to: "00:29" },
-                                { from: "00:30", to: "00:59" }
-                            ],
-                        });
+                    // Ajustar la hora mínima en EndTime
+                    const minTime = `${startHour}:${startMinutes === 30 ? '30' : '00'}`;
+                    const maxTime = "23:30"; // Máximo permitido para EndTime
 
-                        // Establecer el valor mínimo para EndTime si StartTime está definido
-                        document.getElementById("EndTime").value = endTimeStr;
+                    // Actualizar las opciones de EndTime solo una vez
+                    endTimePicker.set({
+                        minTime: minTime,
+                        maxTime: maxTime,
+                    });
+
+                    // Establecer un valor por defecto en EndTime
+                    if (!endTimeInput.value) {
+                        const defaultEndTime =
+                            startMinutes === 30 ? `${startHour + 1}:00` : `${startHour}:30`;
+                        endTimeInput.value = defaultEndTime;
                     }
-                },
-            });
-
-            // Inicializar Flatpickr para Hora de Fin
-            endTimePicker = flatpickr("#EndTime", {
-                ...flatpickrOptions,
-                minuteIncrement: 30, // Solo permitir bloques de 30 minutos (:00, :30)
-                disable: [
-                    { from: "00:00", to: "00:29" },
-                    { from: "00:30", to: "00:59" }
-                ],
-            });
-
-            // Asegurarse de que los valores se envíen al servidor
-            document.querySelector("form").addEventListener("submit", function (e) {
-                // Asignar los valores seleccionados de StartTime y EndTime al formulario
-                const startTimeValue = startTimePicker.selectedDates[0] ? startTimePicker.selectedDates[0].toTimeString().substring(0, 5) : '';
-                const endTimeValue = endTimePicker.selectedDates[0] ? endTimePicker.selectedDates[0].toTimeString().substring(0, 5) : '';
-
-                console.log(startTimeValue, endTimeValue)
-
-                document.getElementById("StartTime").value = startTimeValue;
-                document.getElementById("EndTime").value = endTimeValue;
-            });
+                }
+            },
         });
+
+        // Inicializar Flatpickr para Hora de Fin
+        endTimePicker = flatpickr("#EndTime", {
+            ...flatpickrOptions,
+            disable: [
+                { from: "00:00", to: "00:29" },
+                { from: "00:30", to: "00:59" },
+            ],
+        });
+
     </script>
 
+
+    @*Schedule Modal*@
+    <script>
+        function getShiftList() {
+            const shifts = [];
+            const listItems = document.querySelectorAll("#shifts-list .list-group-item");
+            console.log(listItems)
+
+            listItems.forEach((li) => {
+                const description = li.querySelector("span:nth-child(1)").getAttribute("data-text");
+                const startTime = li.querySelector("span:nth-child(2)").getAttribute("data-text");
+                const endTime = li.querySelector("span:nth-child(3)").getAttribute("data-text");
+
+                shifts.push({
+                    description: description,
+                    startTime: startTime,
+                    endTime: endTime
+                });
+            });
+
+            return shifts;
+        }
+ 
+         
+        let formCreateSchedule = document.getElementById("formCreateSchedule");
+        let errEmptyDayOfWeek = document.getElementById("errEmptyDayOfWeek");
+        let errEmptyShifstList = document.getElementById("errEmptyShifstList");
+
+        const step1 = document.getElementById("step-1");
+        const step2 = document.getElementById("step-2");
+
+        const nextToStep2 = document.getElementById("next-to-step-2");
+        const backToStep1 = document.getElementById("back-to-step-1");
+
+        const addShiftButton = document.getElementById("add-shift");
+        const addSchedule = document.getElementById("add-schedule");
+        const shiftsList = document.getElementById("shifts-list");
+        const errorModal = document.getElementById("errorModal");
+        const errorModalMessage = document.getElementById("errorModalMessage");
+
+        nextToStep2.addEventListener("click", () => {
+
+            if (formCreateSchedule.DayOfWeek.value != "") {
+                addClasAndRemoveOther(errEmptyDayOfWeek, "d-none", "d-block")
+
+                step1.classList.add("d-none");
+                step2.classList.remove("d-none");
+            } else {
+                addClasAndRemoveOther(errEmptyDayOfWeek, "d-block", "d-none")
+            }
+        });
+
+        backToStep1.addEventListener("click", () => {
+            step2.classList.add("d-none");
+            step1.classList.remove("d-none");
+        });
+
+
+        formCreateSchedule.DayOfWeek.addEventListener("change", (e) => {
+            if (e.target.value != "") addClasAndRemoveOther(errEmptyDayOfWeek, "d-none", "d-block")
+
+        })
+
+        formCreateSchedule.addEventListener("submit", (e) => {
+            e.preventDefault()
+            if (!formCreateSchedule.checkValidity()) {
+                formCreateSchedule.reportValidity();
+                return;
+            }
+
+            const description = document.getElementById("ShiftDescription").value;
+            const startTime = document.getElementById("StartTime").value;
+            const endTime = document.getElementById("EndTime").value;
+
+            if (startTime && endTime && startTime < endTime) {
+
+                const li = document.createElement("li");
+                li.classList.add("list-group-item");
+
+                const descriptionSpan = document.createElement("span");
+                descriptionSpan.textContent = `${description} : `;
+                descriptionSpan.setAttribute("data-text", description);
+
+                const startTimeSpan = document.createElement("span");
+                startTimeSpan.textContent = `${startTime} - `;
+                startTimeSpan.setAttribute("data-text", startTime);
+
+                const endTimeSpan = document.createElement("span");
+                endTimeSpan.textContent = `${endTime}`;
+                endTimeSpan.setAttribute("data-text", endTime);
+
+                const deleteIcon = document.createElement("i");
+                deleteIcon.classList.add("fas", "fa-times", "text-danger", "ms-2", "mx-3");
+                deleteIcon.style.cursor = "pointer";
+
+                deleteIcon.addEventListener("click", () => {
+                    li.remove();
+                });
+
+                // Agregar los spans al li
+                li.appendChild(descriptionSpan);
+                li.appendChild(startTimeSpan);
+                li.appendChild(endTimeSpan);
+                li.appendChild(deleteIcon);
+
+                shiftsList.appendChild(li);
+
+                // Limpiar los campos del formulario
+                document.getElementById("ShiftDescription").value = "";
+                document.getElementById("StartTime").value = "";
+                document.getElementById("EndTime").value = "";
+            } else {                
+                addClasAndRemoveOther(errorModal, "d-flex", "d-none")
+                errorModalMessage.textContent = "Ingrese un rango de tiempo válido."
+            }
+
+            addClasAndRemoveOther(errEmptyShifstList, "d-none", "d-block")
+
+        });
+
+        addSchedule.addEventListener("click", async (e) => {
+            if (shiftsList.children.length == 0) {
+                addClasAndRemoveOther(errEmptyShifstList, "d-block", "d-none")
+                return
+            }
+
+            let body = {
+                DayOfWeek: formCreateSchedule.DayOfWeek.value,
+                shifts: getShiftList()
+            };
+
+            const res = await fetch(`https://localhost:44302/schedules/Configure`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            })
+
+            const json = await res.json()
+
+
+            if (json.Status == 200) location.reload()
+
+            if (json.Status == 400) {
+                addClasAndRemoveOther(errorModal, "d-flex", "d-none")
+                errorModalMessage.textContent = json.Message
+            }
+        })
+    </script>
 
 }

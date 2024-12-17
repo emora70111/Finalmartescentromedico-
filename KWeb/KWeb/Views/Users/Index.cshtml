@@ -69,8 +69,14 @@
                         }
                     </td>
                     <td>@(user.IsActive ? "Activo" : "Inactivo")</td>
-                    <td>Acciones</td>
+                    <td>
+                        <i role="button" class="fas fa-edit text-warning ms-2 mx-3" data-toggle="modal"
+                        data-target="#editUserModal_@user.UserID"></i>                        
+                    </td>
                 </tr>
+
+                Html.RenderPartial("Partials/_EditUserModal", user);
+
 
             }
         </tbody>

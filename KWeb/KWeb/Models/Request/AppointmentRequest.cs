@@ -10,7 +10,7 @@ namespace KWeb.Models.Request
         public int PatientID { get; set; }
         public int DoctorID { get; set; }
         public System.DateTime Date { get; set; }
-        public System.TimeSpan Time { get; set; }
+        public int BlockID { get; set; }
         public string Status { get; set; }
         public string Notes { get; set; }
     }

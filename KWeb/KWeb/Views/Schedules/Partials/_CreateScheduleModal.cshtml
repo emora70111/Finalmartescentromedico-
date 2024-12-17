@@ -1,0 +1,77 @@
+﻿
+
+<!-- Modal -->
+<div class="modal fade" id="addAvailabilityModal" tabindex="-1" aria-labelledby="addAvailabilityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAvailabilityModalLabel">Nueva Disponibilidad</h5>
+            </div>
+            <form id="formCreateSchedule" method="post">
+                <div class="modal-body">
+                   
+                    <div id="errorModal" class="alert alert-danger justify-content-between align-items-center d-none">
+                        <span id="errorModalMessage"></span>
+                        <button type="button" class="btn p-0" aria-label="Close" onclick="addClasAndRemoveOther('errorModal', 'd-none', 'd-flex', true)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Paso 1: Seleccionar Día -->
+                    <div id="step-1" class="modal-step">
+                        <div class="form-group mb-3">
+                            <label for="DayOfWeek">Día de la semana</label>
+                            <select name="DayOfWeek" id="DayOfWeek" class="form-control" required>
+                                <option value="" disabled selected>Seleccione un día</option>
+                                <option value="1">Lunes</option>
+                                <option value="2">Martes</option>
+                                <option value="3">Miércoles</option>
+                                <option value="4">Jueves</option>
+                                <option value="5">Viernes</option>
+                                <option value="6">Sábado</option>
+                                <option value="7">Domingo</option>
+                            </select>
+                            <span id="errEmptyDayOfWeek" class="d-none text-danger">Seleccionar dia de la semana</span>
+                        </div>
+                        <div class="text-right">
+                            <button type="button" class="btn btn-primary btn-sm" id="next-to-step-2">Siguiente</button>
+                        </div>
+                    </div>
+
+                    <!-- Paso 2: Agregar Turnos -->
+                    <div id="step-2" class="modal-step d-none">
+                        <div class="form-group mb-3">
+                            <label for="ShiftDescription">Descripción del turno</label>
+                            <input type="text" name="ShiftDescription" id="ShiftDescription" class="form-control" placeholder="" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="StartTime">Hora de inicio del bloque</label>
+                            <input type="time" name="StartTime" id="StartTime" class="form-control" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="EndTime">Hora de fin del bloque</label>
+                            <input type="time" name="EndTime" id="EndTime" class="form-control" required>
+                        </div>
+                        <button type="button" class="btn btn-secondary" id="back-to-step-1">Atrás</button>
+                        <button type="submit" class="btn btn-success" id="add-shift">
+                            <i class="fa fa-plus"></i> Agregar turno
+                        </button>
+                        <ul class="list-group mt-3" id="shifts-list">
+                            <!-- Bloques agregados dinámicamente -->
+                        </ul>
+
+                        <span id="errEmptyShifstList" class="d-none text-danger">Ingresar minimo 1 turno</span>
+
+
+                        <div class="text-right">
+                            <button id="add-schedule" type="button" class="btn btn-primary mt-3">Guardar</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+           
+        </div>
+    </div>
+</div>

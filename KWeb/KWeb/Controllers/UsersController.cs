@@ -15,10 +15,13 @@ namespace KWeb.Controllers
     public class UsersController : Controller
     {
         private readonly CONSULTORIO_VIDA_SALUDEntities _context;
+        private readonly EmailSystem emailSystem;
 
         public UsersController()
         {
             _context = new CONSULTORIO_VIDA_SALUDEntities();
+            emailSystem = new EmailSystem();
+
         }
 
         public async Task<ActionResult> Index()
@@ -100,5 +103,45 @@ namespace KWeb.Controllers
                 UserRequest = request
             });
         }
+
+        [HttpPost]
+        public async Task<ActionResult> Edit(Users request)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _context.Users.FindAsync(request.UserID);
+
+                if (user != null)
+                {
+                    user.FirstName = request.FirstName;
+                    user.LastName = request.LastName;
+                    user.Email = request.Email;
+                    user.Phone = request.Phone;
+                    user.Password = request.Password;
+
+                    if(user.IsActive != request.IsActive)
+                    {
+                        user.IsActive = request.IsActive;
+
+                        if (!user.IsActive) emailSystem.InactivatedUserAppointment(user.Email, user);
+                    }
+
+                    _context.Entry(user).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Usuario actualizado con éxito.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "El usuario no existe.";
+                }
+
+                return RedirectToAction("Index");
+            }
+
+            TempData["ErrorMessage"] = "Datos inválidos.";
+            return RedirectToAction("Index");
+        }
+
     }
 }

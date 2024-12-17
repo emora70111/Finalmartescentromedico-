@@ -37,8 +37,8 @@ namespace KWeb.Utils
                     RoleName = Enum.GetName(typeof(RolesEnum), RolesEnum.Doctor),
                     Options = new List<Option>
                     {
-                        new Option{ Name = "Citas", Url = "/appointments/ofdoctor"},
-                        new Option{ Name = "Tu disponibilidad", Url = "/schedules/index"},
+                        new Option{ Name = "Trabajo", Url = "/appointments/ofdoctor"},
+                        new Option{ Name = "Tu horario", Url = "/schedules/index"},
                         new Option{ Name = "Acerca de", Url = "/main/acercade"}
                     }
                 },

@@ -12,20 +12,21 @@ namespace KWeb.ModelsDB
     using System;
     using System.Collections.Generic;
     
-    public partial class Schedules
+    public partial class Blocks
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public Schedules()
+        public Blocks()
         {
-            this.Shifts = new HashSet<Shifts>();
+            this.Appointments = new HashSet<Appointments>();
         }
     
-        public int ScheduleID { get; set; }
-        public int DoctorID { get; set; }
-        public int DayOfWeek { get; set; }
+        public int BlockID { get; set; }
+        public int ShiftID { get; set; }
+        public System.TimeSpan BlockStartTime { get; set; }
+        public System.TimeSpan BlockEndTime { get; set; }
     
-        public virtual Doctors Doctors { get; set; }
+        public virtual Shifts Shifts { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<Shifts> Shifts { get; set; }
+        public virtual ICollection<Appointments> Appointments { get; set; }
     }
 }

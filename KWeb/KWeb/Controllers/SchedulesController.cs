@@ -1,4 +1,7 @@
-﻿using KWeb.ModelsDB;
+﻿using KWeb.Models.Request;
+using KWeb.Models.Response;
+using KWeb.ModelsDB;
+using KWeb.Utils;
 using KWeb.ViewModels;
 using Newtonsoft.Json;
 using System;
@@ -19,110 +22,198 @@ namespace KWeb.Controllers
         }
         public ActionResult Index()
         {
-
             var userJson = HttpContext.Session["user"] as string;
             var user = JsonConvert.DeserializeObject<Users>(userJson);
 
+            int DoctorId = user.Doctors.First().DoctorID;
+            var Scheduled = Enum.GetName(typeof(AppointmentsStatusEnum), AppointmentsStatusEnum.Scheduled);
+
             var schedules = _context.Schedules
-             .Where(s => s.DoctorID == user.UserID)
-             .Select(s => new ScheduleViewModel
-             {
-                 ScheduleID = s.ScheduleID,
-                 Status = _context.Appointments.FirstOrDefault(a => a.Time == s.StartTime) == null ? "Disponible" : "Ocupado",
-                 StartTime = s.StartTime,
-                 EndTime = s.EndTime,
-                 DayOfWeek = s.DayOfWeek
-             })
-             .ToList();
+            .Where(s => s.DoctorID == DoctorId)
+
+            .Select(s => new ScheduleViewModel
+            {
+                ScheduleID = s.ScheduleID,
+                DayOfWeek = s.DayOfWeek,
+                Shifts = _context.Shifts
+                    .Where(shift => shift.ScheduleID == s.ScheduleID)
+                    .Select(shift => new ShiftViewModel
+                    {
+                        ShiftID = shift.ShiftID,
+                        Description = shift.Description,
+                        StartTime = shift.StartTime,
+                        EndTime = shift.EndTime,
+                        BlockDurationMinutes = shift.BlockDurationMinutes,
+                        Blocks = _context.Blocks
+                            .Where(block => block.ShiftID == shift.ShiftID)
+                            .Select(block => new BlockViewModel
+                            {
+                                BlockID = block.BlockID,
+                                ShiftID = block.ShiftID,
+                                BlockStartTime = block.BlockStartTime,
+                                BlockEndTime = block.BlockEndTime
+                                
+                            })
+                            .ToList()
+
+                    })
+                    .ToList()
+            })
+            .ToList();
 
             return View(schedules);
         }
 
         [HttpPost]
-        public ActionResult Configure(Schedules schedule)
+        public JsonResult Configure(ScheduleRequest model)
         {
             try
             {
                 var userJson = HttpContext.Session["user"] as string;
                 var user = JsonConvert.DeserializeObject<Users>(userJson);
 
-                schedule.DoctorID = user.UserID;
+                model.DoctorID = user.Doctors.First().DoctorID;
 
-                var conflict = _context.Schedules.Any(s => s.DoctorID == user.UserID &&
-                    s.DayOfWeek == schedule.DayOfWeek &&
-                    ((schedule.StartTime >= s.StartTime && schedule.StartTime < s.EndTime) ||
-                     (schedule.EndTime > s.StartTime && schedule.EndTime <= s.EndTime)));
-
-                if (conflict)
+                // Validar conflictos
+                foreach (var shift in model.Shifts)
                 {
-                    TempData["ErrorMessage"] = "El horario se superpone a otro horario.";
+                    bool conflict = _context.Blocks.Any(b =>
+                        b.Shifts.Schedules.DoctorID == model.DoctorID &&
+                        b.Shifts.Schedules.DayOfWeek == model.DayOfWeek &&
+                        ((shift.StartTime < b.BlockEndTime && shift.StartTime >= b.BlockStartTime) || 
+                         (shift.EndTime > b.BlockStartTime && shift.EndTime <= b.BlockEndTime) ||  
+                         (shift.StartTime <= b.BlockStartTime && shift.EndTime >= b.BlockEndTime)));
 
-                    return RedirectToAction("Index");
-                }
-
-                TimeSpan currentStartTime = schedule.StartTime;
-                TimeSpan blockEndTime;
-
-                while (currentStartTime < schedule.EndTime)
-                {
-                    blockEndTime = currentStartTime.Add(TimeSpan.FromMinutes(30));
-
-                    // Asegurarse de no exceder el tiempo de finalización
-                    if (blockEndTime > schedule.EndTime)
-                        blockEndTime = schedule.EndTime;
-
-                    // Crear el nuevo horario
-                    var newSchedule = new Schedules
+                    if (conflict)
                     {
-                        DoctorID = schedule.DoctorID,
-                        DayOfWeek = schedule.DayOfWeek,
-                        StartTime = currentStartTime,
-                        EndTime = blockEndTime
-                    };
-
-                    _context.Schedules.Add(newSchedule);
-                    currentStartTime = blockEndTime;
+                        return Json(new ApiResponse<string>
+                        {
+                            Status = 400,
+                            Message = $"El turno {shift.Description} se superpone a un horario existente.",
+                            Data = $"El turno {shift.Description} se superpone a un horario existente."
+                        }, JsonRequestBehavior.AllowGet);
+                    }
                 }
 
-
+                // Crear el nuevo horario
+                var newSchedule = new Schedules
+                {
+                    DoctorID = model.DoctorID,
+                    DayOfWeek = model.DayOfWeek
+                };
+                _context.Schedules.Add(newSchedule);
                 _context.SaveChanges();
 
-                TempData["SuccessMessage"] = "Horarios agregados exitosamente en bloques de 30 minutos.";
+                foreach (var shift in model.Shifts)
+                {                   
+                                    
+                    var newShift = new Shifts
+                    {
+                        ScheduleID = newSchedule.ScheduleID,
+                        Description = shift.Description,                      
+                        StartTime = shift.StartTime,
+                        EndTime = shift.EndTime,
+                        BlockDurationMinutes = Global.BlockDurationMinutes,
+                    };
+                    _context.Shifts.Add(newShift);
+                    _context.SaveChanges();
+
+                    TimeSpan currentStartTime = shift.StartTime;
+                    TimeSpan blockEndTime;
+
+                    while (currentStartTime < shift.EndTime)
+                    {
+                        blockEndTime = currentStartTime.Add(TimeSpan.FromMinutes(30));
+
+                        var newBlock= new Blocks
+                        {
+                            ShiftID = newShift.ShiftID,
+                            BlockStartTime = currentStartTime,
+                            BlockEndTime = blockEndTime,
+                        };
+
+                        _context.Blocks.Add(newBlock);
+                        _context.SaveChanges();
+
+                        currentStartTime = blockEndTime;
+                    }
+                }
+
+                ApiResponse<string> response = new ApiResponse<string>
+                {
+                    Status = 200,
+                    Message = "Horarios agregados exitosamente en bloques de 30 minutos.",
+                    Data = "Horarios agregados exitosamente en bloques de 30 minutos."
+                };
+
+                return Json(response, JsonRequestBehavior.DenyGet);
+
 
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Error: " + ex.Message;
+                 ApiResponse<string> response = new ApiResponse<string>
+                {
+                    Status = 400,
+                    Message = "Error: " + ex.Message,
+                    Data = "Error: " + ex.Message
+                };
+
+                return Json(response, JsonRequestBehavior.AllowGet);
             }
 
-            return RedirectToAction("Index");
-
         }
+
 
         [HttpGet]
 
         public JsonResult GetSchedulesByDoctor(int doctorId, int dayOfWeek)
-        {            
-            string[] daysOfWeek = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-            string dayName = daysOfWeek[dayOfWeek];
+        {
+            var Scheduled = Enum.GetName(typeof(AppointmentsStatusEnum), AppointmentsStatusEnum.Scheduled);
 
             var schedules = _context.Schedules
-                .Where(s => s.DoctorID == doctorId && s.DayOfWeek == dayName)
-                .ToList()
-                .Select(s => new ScheduleViewModel
-                {
-                    ScheduleID = s.ScheduleID,
-                    Status = _context.Appointments.FirstOrDefault(a => a.Time == s.StartTime) == null ? "Disponible" : "Ocupado",
-                    DoctorID = s.DoctorID,
-                    DayOfWeek = s.DayOfWeek,   
-                    StartTime = s.StartTime,
-                    EndTime = s.EndTime
-                })
-                .ToList();
+           .Where(s => s.DoctorID == doctorId && s.DayOfWeek == dayOfWeek)
+           .Select(s => new ScheduleViewModel
+           {
+               ScheduleID = s.ScheduleID,
+               DayOfWeek = s.DayOfWeek,
+               Shifts = _context.Shifts
+                   .Where(shift => shift.ScheduleID == s.ScheduleID)
+                   .Select(shift => new ShiftViewModel
+                   {
+                       ShiftID = shift.ShiftID,
+                       Description = shift.Description,
+                       StartTime = shift.StartTime,
+                       EndTime = shift.EndTime,
+                       BlockDurationMinutes = shift.BlockDurationMinutes,
+                       Blocks = _context.Blocks
+                           .Where(block => block.ShiftID == shift.ShiftID)
+                           .Select(block => new BlockViewModel
+                           {
+                               BlockID = block.BlockID,
+                               ShiftID = block.ShiftID,
+                               BlockStartTime = block.BlockStartTime,
+                               BlockEndTime = block.BlockEndTime,
+                               Status = _context.Appointments
+                                    .Any(a =>
+                                        a.BlockID == block.BlockID &&
+                                        a.Status == Scheduled
+                                    ) ? "Ocupado" : "Disponible"
+                           })
+                           .ToList()
+                   })
+                   .ToList()
+           })
+           .ToList();
 
+            ApiResponse<List<ScheduleViewModel>> response = new ApiResponse<List<ScheduleViewModel>>
+            {
+                Status = 200,
+                Message = "Agenda obtenida.",
+                Data = schedules
+            };
 
-
-            return Json(schedules, JsonRequestBehavior.AllowGet);
+            return Json(response, JsonRequestBehavior.AllowGet);
         }
 
     }

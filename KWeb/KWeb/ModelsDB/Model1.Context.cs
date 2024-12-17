@@ -32,5 +32,8 @@ namespace KWeb.ModelsDB
         public virtual DbSet<Patients> Patients { get; set; }
         public virtual DbSet<Schedules> Schedules { get; set; }
         public virtual DbSet<Users> Users { get; set; }
+        public virtual DbSet<Shifts> Shifts { get; set; }
+        public virtual DbSet<Blocks> Blocks { get; set; }
+        public virtual DbSet<PasswordRecovery> PasswordRecovery { get; set; }
     }
 }

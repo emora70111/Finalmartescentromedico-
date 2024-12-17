@@ -25,9 +25,9 @@ namespace KWeb.ModelsDB
         public int PatientID { get; set; }
         public int DoctorID { get; set; }
         public System.DateTime Date { get; set; }
-        public System.TimeSpan Time { get; set; }
         public string Status { get; set; }
         public string Notes { get; set; }
+        public int BlockID { get; set; }
     
         public virtual Doctors Doctors { get; set; }
         public virtual Patients Patients { get; set; }
@@ -35,5 +35,6 @@ namespace KWeb.ModelsDB
         public virtual ICollection<Notifications> Notifications { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<MedicalHistory> MedicalHistory { get; set; }
+        public virtual Blocks Blocks { get; set; }
     }
 }

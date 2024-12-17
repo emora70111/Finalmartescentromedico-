@@ -1,5 +1,6 @@
 ﻿using KWeb.Models.Request;
 using KWeb.ModelsDB;
+using KWeb.Services;
 using KWeb.Utils;
 using KWeb.ViewModels;
 using Newtonsoft.Json;
@@ -16,28 +17,54 @@ namespace KWeb.Controllers
     public class AppointmentsController : Controller
     {
         private readonly CONSULTORIO_VIDA_SALUDEntities _context;
+        private readonly EmailSystem emailSystem;
 
         public AppointmentsController()
         {
+            emailSystem = new EmailSystem();
             _context = new CONSULTORIO_VIDA_SALUDEntities();
         }
 
         public ActionResult OfDoctor()
         {
-            return View();
+            var userJson = HttpContext.Session["user"] as string;
+            var user = JsonConvert.DeserializeObject<Users>(userJson);
+            int DoctorId = user.Doctors.First().DoctorID;
+            string Canceled = Enum.GetName(typeof(KWeb.Utils.AppointmentsStatusEnum), KWeb.Utils.AppointmentsStatusEnum.Canceled);
+
+            var appointments = _context.Appointments
+                .Where(a => DbFunctions.TruncateTime(a.Date) == DateTime.Today && a.DoctorID == DoctorId && a.Status != Canceled)
+                .ToList();
+
+            var tomorrow = DateTime.Today.AddDays(1);
+            var appointmentsScheduled = _context.Appointments
+                .Where(a => DbFunctions.TruncateTime(a.Date) >= tomorrow && a.DoctorID == DoctorId)
+                .ToList();
+
+            var viewModel = new AppointmentsOfDoctorViewModel
+            {
+                AppointmentsScheduled = appointmentsScheduled,
+                AppointmentsToday = appointments
+            };
+
+            return View(viewModel);
         }
         public async Task<ActionResult> OfPatient()
         {
             var userJson = HttpContext.Session["user"] as string;
             var user = JsonConvert.DeserializeObject<Users>(userJson);
+            int PatientId = user.Patients.First().PatientID;
 
-            var appointments = await _context.Appointments.Where(a => a.PatientID == user.UserID).ToListAsync();
+            var appointments = await _context.Appointments.Where(a => a.PatientID == PatientId).ToListAsync();
             var doctors = await _context.Doctors.ToListAsync();
 
             var viewModel = new AppointmentsOfPatientViewModel
             {     
                 Doctors = doctors,
                 AppointmentRequest = new AppointmentRequest()
+                {
+                    Date = DateTime.Now.AddDays(1)
+                }
             };
 
             return View(viewModel);
@@ -51,7 +78,7 @@ namespace KWeb.Controllers
             var userJson = HttpContext.Session["user"] as string;
             var user = JsonConvert.DeserializeObject<Users>(userJson);
 
-            model.PatientID = user.UserID;
+            model.PatientID = user.Patients.First().PatientID; 
 
             if (ModelState.IsValid)
             {
@@ -60,7 +87,7 @@ namespace KWeb.Controllers
                     PatientID = model.PatientID,
                     DoctorID = model.DoctorID,
                     Date = model.Date,
-                    Time = model.Time,
+                    BlockID = model.BlockID,
                     Status = Enum.GetName(typeof(AppointmentsStatusEnum), AppointmentsStatusEnum.Scheduled),
                     Notes = model.Notes
                 };
@@ -68,7 +95,17 @@ namespace KWeb.Controllers
                 _context.Appointments.Add(newAppointment);
                 await _context.SaveChangesAsync();
 
+                var appointmentRecently = _context.Appointments
+                    .Include(a => a.Patients)
+                     .Include(p => p.Patients.Users) // Incluir la relación con Users dentro de Patient
+                    .Include(a => a.Doctors)
+                    .Include(a => a.Blocks)
+                    .FirstOrDefault(a => a.AppointmentID == newAppointment.AppointmentID);
+
                 TempData["SuccessMessage"] = "La cita se agendo correctamente.";
+
+                emailSystem.ScheduledPatientAppointment(appointmentRecently.Patients.Users.Email, appointmentRecently);
+                emailSystem.ScheduledDoctorAppointment(appointmentRecently.Doctors.Users.Email, appointmentRecently);
 
                 return RedirectToAction("OfPatient");
             }
@@ -79,43 +116,44 @@ namespace KWeb.Controllers
             
         }
 
+        [HttpPost]
+        public ActionResult AttendAppointment(int appointmentId, string notes, int blockId, int doctorId)
+        {
+            var appointment = _context.Appointments.FirstOrDefault(a => a.AppointmentID == appointmentId);
 
-        //public ActionResult Agendar()
-        //{
-        //    ViewBag.Doctores = _context.Doctores.ToList();
-        //    ViewBag.Pacientes = _context.Pacientes.ToList();
-        //    return View();
-        //}
+            var medicalHistory = new MedicalHistory
+            {
+                AppointmentId = appointmentId,
+                ConsultationDate = DateTime.Now.Date,
+                Notes = notes
+            };
+            _context.MedicalHistory.Add(medicalHistory);
 
-        //[HttpPost]
-        //public ActionResult Agendar(int pacienteId, int doctorId, DateTime fechaHora)
-        //{
-        //    var cita = new Cita
-        //    {
-        //        PacienteId = pacienteId,
-        //        DoctorId = doctorId,
-        //        FechaHora = fechaHora
-        //    };
+            appointment.Status = Enum.GetName(typeof(KWeb.Utils.AppointmentsStatusEnum), KWeb.Utils.AppointmentsStatusEnum.Completed);
 
-        //    _context.Citas.Add(cita);
-        //    _context.SaveChanges();
+            _context.SaveChanges();
 
-        //    return RedirectToAction("Confirmacion");
-        //}
+            return RedirectToAction("OfDoctor");
+        }
 
-        //public ActionResult Confirmacion()
-        //{
-        //    return View();
-        //}
+        [HttpPost]
+        public ActionResult CancelAppointment(int appointmentId)
+        {
+            var appointment = _context.Appointments
+                   .Include(a => a.Patients)
+                    .Include(p => p.Patients.Users)
+                   .Include(a => a.Doctors)
+                   .Include(a => a.Blocks)
+                   .FirstOrDefault(a => a.AppointmentID == appointmentId);
 
-        //public ActionResult MisCitas(int pacienteId)
-        //{
-        //    var citas = _context.Citas
-        //        .Where(c => c.PacienteId == pacienteId)
-        //        .Include(c => c.Doctor)
-        //        .ToList();
+            appointment.Status = Enum.GetName(typeof(KWeb.Utils.AppointmentsStatusEnum), KWeb.Utils.AppointmentsStatusEnum.Canceled);
 
-        //    return View(citas);
-        //}
+            _context.SaveChanges();
+
+            emailSystem.CanceledPatientAppointment(appointment.Patients.Users.Email, appointment);
+
+            return RedirectToAction("OfDoctor");
+        }
+
     }
 }

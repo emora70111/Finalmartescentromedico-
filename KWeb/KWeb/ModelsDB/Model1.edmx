@@ -13,9 +13,18 @@
           <Property Name="PatientID" Type="int" Nullable="false" />
           <Property Name="DoctorID" Type="int" Nullable="false" />
           <Property Name="Date" Type="date" Nullable="false" />
-          <Property Name="Time" Type="time" Precision="7" Nullable="false" />
+          <Property Name="BlockID" Type="int" Nullable="false" />
           <Property Name="Status" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="Notes" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="Blocks">
+          <Key>
+            <PropertyRef Name="BlockID" />
+          </Key>
+          <Property Name="BlockID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ShiftID" Type="int" Nullable="false" />
+          <Property Name="BlockStartTime" Type="time" Precision="7" Nullable="false" />
+          <Property Name="BlockEndTime" Type="time" Precision="7" Nullable="false" />
         </EntityType>
         <EntityType Name="Doctors">
           <Key>
@@ -44,6 +53,16 @@
           <Property Name="Message" Type="nvarchar" MaxLength="500" Nullable="false" />
           <Property Name="SentDate" Type="datetime" />
         </EntityType>
+        <EntityType Name="PasswordRecovery">
+          <Key>
+            <PropertyRef Name="PasswordRecoveryID" />
+          </Key>
+          <Property Name="PasswordRecoveryID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Code" Type="varchar" MaxLength="100" />
+          <Property Name="Date" Type="datetime" Nullable="false" />
+          <Property Name="UserID" Type="int" Nullable="false" />
+          <Property Name="Status" Type="bit" />
+        </EntityType>
         <EntityType Name="Patients">
           <Key>
             <PropertyRef Name="PatientID" />
@@ -58,9 +77,18 @@
           </Key>
           <Property Name="ScheduleID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="DoctorID" Type="int" Nullable="false" />
-          <Property Name="DayOfWeek" Type="nvarchar" MaxLength="15" Nullable="false" />
+          <Property Name="DayOfWeek" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Shifts">
+          <Key>
+            <PropertyRef Name="ShiftID" />
+          </Key>
+          <Property Name="ShiftID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ScheduleID" Type="int" Nullable="false" />
+          <Property Name="Description" Type="varchar" MaxLength="100" />
           <Property Name="StartTime" Type="time" Precision="7" Nullable="false" />
           <Property Name="EndTime" Type="time" Precision="7" Nullable="false" />
+          <Property Name="BlockDurationMinutes" Type="int" />
         </EntityType>
         <EntityType Name="Users">
           <Key>
@@ -75,7 +103,19 @@
           <Property Name="Role" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="IsActive" Type="bit" Nullable="false" />
         </EntityType>
-        <Association Name="FK__Appointme__Docto__47DBAE45">
+        <Association Name="FK__Appointme__Block__5165187F">
+          <End Role="Blocks" Type="Self.Blocks" Multiplicity="1" />
+          <End Role="Appointments" Type="Self.Appointments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Blocks">
+              <PropertyRef Name="BlockID" />
+            </Principal>
+            <Dependent Role="Appointments">
+              <PropertyRef Name="BlockID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__Appointme__Docto__5070F446">
           <End Role="Doctors" Type="Self.Doctors" Multiplicity="1" />
           <End Role="Appointments" Type="Self.Appointments" Multiplicity="*" />
           <ReferentialConstraint>
@@ -87,7 +127,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__Appointme__Patie__46E78A0C">
+        <Association Name="FK__Appointme__Patie__4F7CD00D">
           <End Role="Patients" Type="Self.Patients" Multiplicity="1" />
           <End Role="Appointments" Type="Self.Appointments" Multiplicity="*" />
           <ReferentialConstraint>
@@ -96,6 +136,18 @@
             </Principal>
             <Dependent Role="Appointments">
               <PropertyRef Name="PatientID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__Blocks__ShiftID__4BAC3F29">
+          <End Role="Shifts" Type="Self.Shifts" Multiplicity="1" />
+          <End Role="Blocks" Type="Self.Blocks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Shifts">
+              <PropertyRef Name="ShiftID" />
+            </Principal>
+            <Dependent Role="Blocks">
+              <PropertyRef Name="ShiftID" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -111,7 +163,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__MedicalHi__Appoi__4F7CD00D">
+        <Association Name="FK__MedicalHi__Appoi__59063A47">
           <End Role="Appointments" Type="Self.Appointments" Multiplicity="1" />
           <End Role="MedicalHistory" Type="Self.MedicalHistory" Multiplicity="*" />
           <ReferentialConstraint>
@@ -123,7 +175,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__Notificat__Appoi__4CA06362">
+        <Association Name="FK__Notificat__Appoi__5629CD9C">
           <End Role="Appointments" Type="Self.Appointments" Multiplicity="0..1" />
           <End Role="Notifications" Type="Self.Notifications" Multiplicity="*" />
           <ReferentialConstraint>
@@ -135,7 +187,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK__Notificat__UserI__4BAC3F29">
+        <Association Name="FK__Notificat__UserI__5535A963">
           <End Role="Users" Type="Self.Users" Multiplicity="1" />
           <End Role="Notifications" Type="Self.Notifications" Multiplicity="*" />
           <ReferentialConstraint>
@@ -143,6 +195,18 @@
               <PropertyRef Name="UserID" />
             </Principal>
             <Dependent Role="Notifications">
+              <PropertyRef Name="UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__PasswordR__UserI__656C112C">
+          <End Role="Users" Type="Self.Users" Multiplicity="1" />
+          <End Role="PasswordRecovery" Type="Self.PasswordRecovery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="PasswordRecovery">
               <PropertyRef Name="UserID" />
             </Dependent>
           </ReferentialConstraint>
@@ -171,37 +235,64 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK__Shifts__Schedule__47DBAE45">
+          <End Role="Schedules" Type="Self.Schedules" Multiplicity="1" />
+          <End Role="Shifts" Type="Self.Shifts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Schedules">
+              <PropertyRef Name="ScheduleID" />
+            </Principal>
+            <Dependent Role="Shifts">
+              <PropertyRef Name="ScheduleID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="CONSULTORIO_VIDA_SALUDModelStoreContainer">
           <EntitySet Name="Appointments" EntityType="Self.Appointments" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Blocks" EntityType="Self.Blocks" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Doctors" EntityType="Self.Doctors" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="MedicalHistory" EntityType="Self.MedicalHistory" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Notifications" EntityType="Self.Notifications" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PasswordRecovery" EntityType="Self.PasswordRecovery" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Patients" EntityType="Self.Patients" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Schedules" EntityType="Self.Schedules" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Shifts" EntityType="Self.Shifts" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Users" EntityType="Self.Users" Schema="dbo" store:Type="Tables" />
-          <AssociationSet Name="FK__Appointme__Docto__47DBAE45" Association="Self.FK__Appointme__Docto__47DBAE45">
+          <AssociationSet Name="FK__Appointme__Block__5165187F" Association="Self.FK__Appointme__Block__5165187F">
+            <End Role="Blocks" EntitySet="Blocks" />
+            <End Role="Appointments" EntitySet="Appointments" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Appointme__Docto__5070F446" Association="Self.FK__Appointme__Docto__5070F446">
             <End Role="Doctors" EntitySet="Doctors" />
             <End Role="Appointments" EntitySet="Appointments" />
           </AssociationSet>
-          <AssociationSet Name="FK__Appointme__Patie__46E78A0C" Association="Self.FK__Appointme__Patie__46E78A0C">
+          <AssociationSet Name="FK__Appointme__Patie__4F7CD00D" Association="Self.FK__Appointme__Patie__4F7CD00D">
             <End Role="Patients" EntitySet="Patients" />
             <End Role="Appointments" EntitySet="Appointments" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Blocks__ShiftID__4BAC3F29" Association="Self.FK__Blocks__ShiftID__4BAC3F29">
+            <End Role="Shifts" EntitySet="Shifts" />
+            <End Role="Blocks" EntitySet="Blocks" />
           </AssociationSet>
           <AssociationSet Name="FK__Doctors__UserID__3C69FB99" Association="Self.FK__Doctors__UserID__3C69FB99">
             <End Role="Users" EntitySet="Users" />
             <End Role="Doctors" EntitySet="Doctors" />
           </AssociationSet>
-          <AssociationSet Name="FK__MedicalHi__Appoi__4F7CD00D" Association="Self.FK__MedicalHi__Appoi__4F7CD00D">
+          <AssociationSet Name="FK__MedicalHi__Appoi__59063A47" Association="Self.FK__MedicalHi__Appoi__59063A47">
             <End Role="Appointments" EntitySet="Appointments" />
             <End Role="MedicalHistory" EntitySet="MedicalHistory" />
           </AssociationSet>
-          <AssociationSet Name="FK__Notificat__Appoi__4CA06362" Association="Self.FK__Notificat__Appoi__4CA06362">
+          <AssociationSet Name="FK__Notificat__Appoi__5629CD9C" Association="Self.FK__Notificat__Appoi__5629CD9C">
             <End Role="Appointments" EntitySet="Appointments" />
             <End Role="Notifications" EntitySet="Notifications" />
           </AssociationSet>
-          <AssociationSet Name="FK__Notificat__UserI__4BAC3F29" Association="Self.FK__Notificat__UserI__4BAC3F29">
+          <AssociationSet Name="FK__Notificat__UserI__5535A963" Association="Self.FK__Notificat__UserI__5535A963">
             <End Role="Users" EntitySet="Users" />
             <End Role="Notifications" EntitySet="Notifications" />
+          </AssociationSet>
+          <AssociationSet Name="FK__PasswordR__UserI__656C112C" Association="Self.FK__PasswordR__UserI__656C112C">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="PasswordRecovery" EntitySet="PasswordRecovery" />
           </AssociationSet>
           <AssociationSet Name="FK__Patients__UserID__3F466844" Association="Self.FK__Patients__UserID__3F466844">
             <End Role="Users" EntitySet="Users" />
@@ -210,6 +301,10 @@
           <AssociationSet Name="FK__Schedules__Docto__4316F928" Association="Self.FK__Schedules__Docto__4316F928">
             <End Role="Doctors" EntitySet="Doctors" />
             <End Role="Schedules" EntitySet="Schedules" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Shifts__Schedule__47DBAE45" Association="Self.FK__Shifts__Schedule__47DBAE45">
+            <End Role="Schedules" EntitySet="Schedules" />
+            <End Role="Shifts" EntitySet="Shifts" />
           </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
@@ -224,13 +319,14 @@
           <Property Name="PatientID" Type="Int32" Nullable="false" />
           <Property Name="DoctorID" Type="Int32" Nullable="false" />
           <Property Name="Date" Type="DateTime" Nullable="false" Precision="0" />
-          <Property Name="Time" Type="Time" Nullable="false" Precision="7" />
           <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
           <Property Name="Notes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="Doctors" Relationship="Self.FK__Appointme__Docto__47DBAE45" FromRole="Appointments" ToRole="Doctors" />
           <NavigationProperty Name="Patients" Relationship="Self.FK__Appointme__Patie__46E78A0C" FromRole="Appointments" ToRole="Patients" />
           <NavigationProperty Name="Notifications" Relationship="Self.FK__Notificat__Appoi__4CA06362" FromRole="Appointments" ToRole="Notifications" />
           <NavigationProperty Name="MedicalHistory" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__MedicalHi__Appoi__4F7CD00D" FromRole="Appointments" ToRole="MedicalHistory" />
+          <Property Name="BlockID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Blocks" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__Appointme__Block__5165187F" FromRole="Appointments" ToRole="Blocks" />
         </EntityType>
         <EntityType Name="Doctors">
           <Key>
@@ -281,10 +377,9 @@
           </Key>
           <Property Name="ScheduleID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="DoctorID" Type="Int32" Nullable="false" />
-          <Property Name="DayOfWeek" Type="String" MaxLength="15" FixedLength="false" Unicode="true" Nullable="false" />
-          <Property Name="StartTime" Type="Time" Nullable="false" Precision="7" />
-          <Property Name="EndTime" Type="Time" Nullable="false" Precision="7" />
+          <Property Name="DayOfWeek" Type="Int32" Nullable="false" />
           <NavigationProperty Name="Doctors" Relationship="Self.FK__Schedules__Docto__4316F928" FromRole="Schedules" ToRole="Doctors" />
+          <NavigationProperty Name="Shifts" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__Shifts__Schedule__45F365D3" FromRole="Schedules" ToRole="Shifts" />
         </EntityType>
         <EntityType Name="Users">
           <Key>
@@ -301,6 +396,7 @@
           <NavigationProperty Name="Doctors" Relationship="Self.FK__Doctors__UserID__3C69FB99" FromRole="Users" ToRole="Doctors" />
           <NavigationProperty Name="Notifications" Relationship="Self.FK__Notificat__UserI__4BAC3F29" FromRole="Users" ToRole="Notifications" />
           <NavigationProperty Name="Patients" Relationship="Self.FK__Patients__UserID__3F466844" FromRole="Users" ToRole="Patients" />
+          <NavigationProperty Name="PasswordRecovery" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__PasswordR__UserI__5CD6CB2B" FromRole="Users" ToRole="PasswordRecovery" />
         </EntityType>
         <Association Name="FK__Appointme__Docto__47DBAE45">
           <End Role="Doctors" Type="Self.Doctors" Multiplicity="1" />
@@ -426,6 +522,25 @@
             <End Role="Appointments" EntitySet="Appointments" />
             <End Role="MedicalHistory" EntitySet="MedicalHistory" />
           </AssociationSet>
+          <EntitySet Name="Shifts" EntityType="CONSULTORIO_VIDA_SALUDModel.Shifts" />
+          <AssociationSet Name="FK__Shifts__Schedule__45F365D3" Association="CONSULTORIO_VIDA_SALUDModel.FK__Shifts__Schedule__45F365D3">
+            <End Role="Schedules" EntitySet="Schedules" />
+            <End Role="Shifts" EntitySet="Shifts" />
+          </AssociationSet>
+          <EntitySet Name="Blocks" EntityType="CONSULTORIO_VIDA_SALUDModel.Blocks" />
+          <AssociationSet Name="FK__Blocks__ShiftID__4AB81AF0" Association="CONSULTORIO_VIDA_SALUDModel.FK__Blocks__ShiftID__4AB81AF0">
+            <End Role="Shifts" EntitySet="Shifts" />
+            <End Role="Blocks" EntitySet="Blocks" />
+          </AssociationSet>
+          <AssociationSet Name="FK__Appointme__Block__5165187F" Association="CONSULTORIO_VIDA_SALUDModel.FK__Appointme__Block__5165187F">
+            <End Role="Blocks" EntitySet="Blocks" />
+            <End Role="Appointments" EntitySet="Appointments" />
+          </AssociationSet>
+          <EntitySet Name="PasswordRecovery" EntityType="CONSULTORIO_VIDA_SALUDModel.PasswordRecovery" />
+          <AssociationSet Name="FK__PasswordR__UserI__5CD6CB2B" Association="CONSULTORIO_VIDA_SALUDModel.FK__PasswordR__UserI__5CD6CB2B">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="PasswordRecovery" EntitySet="PasswordRecovery" />
+          </AssociationSet>
         </EntityContainer>
         <Association Name="FK__MedicalHi__Appoi__4F7CD00D">
           <End Type="CONSULTORIO_VIDA_SALUDModel.Appointments" Role="Appointments" Multiplicity="1" />
@@ -439,6 +554,89 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="Shifts">
+          <Key>
+            <PropertyRef Name="ShiftID" />
+          </Key>
+          <Property Name="ShiftID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ScheduleID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Schedules" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__Shifts__Schedule__45F365D3" FromRole="Shifts" ToRole="Schedules" />
+          <Property Name="Description" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="BlockDurationMinutes" Type="Int32" />
+          <NavigationProperty Name="Blocks" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__Blocks__ShiftID__4AB81AF0" FromRole="Shifts" ToRole="Blocks" />
+          <Property Name="StartTime" Type="Time" Nullable="false" Precision="7" />
+          <Property Name="EndTime" Type="Time" Nullable="false" Precision="7" />
+        </EntityType>
+        <Association Name="FK__Shifts__Schedule__45F365D3">
+          <End Type="CONSULTORIO_VIDA_SALUDModel.Schedules" Role="Schedules" Multiplicity="1" />
+          <End Type="CONSULTORIO_VIDA_SALUDModel.Shifts" Role="Shifts" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Schedules">
+              <PropertyRef Name="ScheduleID" />
+            </Principal>
+            <Dependent Role="Shifts">
+              <PropertyRef Name="ScheduleID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="Blocks">
+          <Key>
+            <PropertyRef Name="BlockID" />
+          </Key>
+          <Property Name="BlockID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ShiftID" Type="Int32" Nullable="false" />
+          <Property Name="BlockStartTime" Type="Time" Nullable="false" Precision="7" />
+          <Property Name="BlockEndTime" Type="Time" Nullable="false" Precision="7" />
+          <NavigationProperty Name="Shifts" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__Blocks__ShiftID__4AB81AF0" FromRole="Blocks" ToRole="Shifts" />
+          <NavigationProperty Name="Appointments" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__Appointme__Block__5165187F" FromRole="Blocks" ToRole="Appointments" />
+        </EntityType>
+        <Association Name="FK__Blocks__ShiftID__4AB81AF0">
+          <End Type="CONSULTORIO_VIDA_SALUDModel.Shifts" Role="Shifts" Multiplicity="1" />
+          <End Type="CONSULTORIO_VIDA_SALUDModel.Blocks" Role="Blocks" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Shifts">
+              <PropertyRef Name="ShiftID" />
+            </Principal>
+            <Dependent Role="Blocks">
+              <PropertyRef Name="ShiftID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK__Appointme__Block__5165187F">
+          <End Type="CONSULTORIO_VIDA_SALUDModel.Blocks" Role="Blocks" Multiplicity="1" />
+          <End Type="CONSULTORIO_VIDA_SALUDModel.Appointments" Role="Appointments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Blocks">
+              <PropertyRef Name="BlockID" />
+            </Principal>
+            <Dependent Role="Appointments">
+              <PropertyRef Name="BlockID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityType Name="PasswordRecovery">
+          <Key>
+            <PropertyRef Name="PasswordRecoveryID" />
+          </Key>
+          <Property Name="PasswordRecoveryID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Code" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Date" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="UserID" Type="Int32" Nullable="false" />
+          <NavigationProperty Name="Users" Relationship="CONSULTORIO_VIDA_SALUDModel.FK__PasswordR__UserI__5CD6CB2B" FromRole="PasswordRecovery" ToRole="Users" />
+          <Property Name="Status" Type="Boolean" />
+        </EntityType>
+        <Association Name="FK__PasswordR__UserI__5CD6CB2B">
+          <End Type="CONSULTORIO_VIDA_SALUDModel.Users" Role="Users" Multiplicity="1" />
+          <End Type="CONSULTORIO_VIDA_SALUDModel.PasswordRecovery" Role="PasswordRecovery" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserID" />
+            </Principal>
+            <Dependent Role="PasswordRecovery">
+              <PropertyRef Name="UserID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -448,11 +646,11 @@
           <EntitySetMapping Name="Appointments">
             <EntityTypeMapping TypeName="CONSULTORIO_VIDA_SALUDModel.Appointments">
               <MappingFragment StoreEntitySet="Appointments">
+                <ScalarProperty Name="BlockID" ColumnName="BlockID" />
                 <ScalarProperty Name="AppointmentID" ColumnName="AppointmentID" />
                 <ScalarProperty Name="PatientID" ColumnName="PatientID" />
                 <ScalarProperty Name="DoctorID" ColumnName="DoctorID" />
                 <ScalarProperty Name="Date" ColumnName="Date" />
-                <ScalarProperty Name="Time" ColumnName="Time" />
                 <ScalarProperty Name="Status" ColumnName="Status" />
                 <ScalarProperty Name="Notes" ColumnName="Notes" />
               </MappingFragment>
@@ -503,9 +701,7 @@
                 <ScalarProperty Name="ScheduleID" ColumnName="ScheduleID" />
                 <ScalarProperty Name="DoctorID" ColumnName="DoctorID" />
                 <ScalarProperty Name="DayOfWeek" ColumnName="DayOfWeek" />
-                <ScalarProperty Name="StartTime" ColumnName="StartTime" />
-                <ScalarProperty Name="EndTime" ColumnName="EndTime" />
-              </MappingFragment>
+                </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
           <EntitySetMapping Name="Users">
@@ -519,6 +715,39 @@
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="Role" ColumnName="Role" />
                 <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Shifts">
+            <EntityTypeMapping TypeName="CONSULTORIO_VIDA_SALUDModel.Shifts">
+              <MappingFragment StoreEntitySet="Shifts">
+                <ScalarProperty Name="EndTime" ColumnName="EndTime" />
+                <ScalarProperty Name="StartTime" ColumnName="StartTime" />
+                <ScalarProperty Name="BlockDurationMinutes" ColumnName="BlockDurationMinutes" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="ScheduleID" ColumnName="ScheduleID" />
+                <ScalarProperty Name="ShiftID" ColumnName="ShiftID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Blocks">
+            <EntityTypeMapping TypeName="CONSULTORIO_VIDA_SALUDModel.Blocks">
+              <MappingFragment StoreEntitySet="Blocks">
+                <ScalarProperty Name="BlockEndTime" ColumnName="BlockEndTime" />
+                <ScalarProperty Name="BlockStartTime" ColumnName="BlockStartTime" />
+                <ScalarProperty Name="ShiftID" ColumnName="ShiftID" />
+                <ScalarProperty Name="BlockID" ColumnName="BlockID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PasswordRecovery">
+            <EntityTypeMapping TypeName="CONSULTORIO_VIDA_SALUDModel.PasswordRecovery">
+              <MappingFragment StoreEntitySet="PasswordRecovery">
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="UserID" ColumnName="UserID" />
+                <ScalarProperty Name="Date" ColumnName="Date" />
+                <ScalarProperty Name="Code" ColumnName="Code" />
+                <ScalarProperty Name="PasswordRecoveryID" ColumnName="PasswordRecoveryID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

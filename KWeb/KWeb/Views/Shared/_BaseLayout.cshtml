@@ -50,6 +50,18 @@
     @*<script src="~/js/script.js"></script>
     <script src="~/js/contact.js"></script>*@
 
+    <script>
+
+        function addClasAndRemoveOther(element, addClass, removeClass, isElementTextId = false) {
+            let el = element
+            if (isElementTextId) el = document.getElementById(element)
+
+            el.classList.add(addClass)
+            el.classList.remove(removeClass)
+        }
+
+    </script>
+
     @RenderSection("BaseScripts", required: false)
 
 </body>

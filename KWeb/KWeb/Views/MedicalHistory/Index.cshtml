@@ -1,10 +1,10 @@
-﻿@{
+﻿@model List<KWeb.ModelsDB.MedicalHistory>
+
+@{
     ViewData["Title"] = "Main";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
 }
-
-HISOTIRAL CLINICO PACIENTE
 
 
 @section Styles {
@@ -12,6 +12,44 @@ HISOTIRAL CLINICO PACIENTE
     }
 }
 
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="mb-3 text-primary">Historial medico</h2>       
+    </div>
+
+    <table class="table table-hover table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Doctor</th>
+                <th>Fecha de consulta</th>
+                <th>Motivo</th>
+                <th>Diagnostico</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count() == 0)
+            {
+                <tr class="no-data">
+                    <td colspan="11">Registro vacio</td>
+                </tr>
+            }
+
+            @foreach (var history in Model)
+            {
+                <tr>
+                    <td>@history.Appointments.Doctors.Users.FirstName</td>
+                    <td>
+                        @history.ConsultationDate.ToString("yyyy-MM-dd") @history.Appointments.Blocks.BlockStartTime
+                                    </td>
+                    <td>@history.Appointments.Notes</td>
+                    <td>@history.Notes</td>             
+                </tr>
+
+            }
+        </tbody>
+    </table>
+</div>
 @section Scripts {
     @{
 

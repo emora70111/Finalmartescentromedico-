@@ -38,15 +38,16 @@
 
     <div class="form-group mb-3">
         <label for="Time" class="form-label">Seleccione un Horario <span id="dia-semana"></span></label>
+        <p id="schedulesEmpty" class="text-info d-none">Horario no definido para el especialista</p>
         <div id="scheduleGrid" class="d-flex flex-wrap gap-2">
-            <!-- Los horarios aparecerán aquí -->
+    
         </div>
     </div>
 
-    <input type="hidden" id="selectedTime" name="AppointmentRequest.Time" />
+    <input type="hidden" id="blockId" name="AppointmentRequest.BlockID" />
 
     <div class="form-group mb-3">
-        <label for="Notes" class="form-label">Notas</label>
+        <label for="Notes" class="form-label">Motivo</label>
         @Html.TextAreaFor(
             model => model.AppointmentRequest.Notes,
             new { @class = "form-control", @rows = "3", @placeholder = "Ingrese notas adicionales (opcional)" }
@@ -55,8 +56,20 @@
 
     <button type="submit" class="btn btn-primary w-100 py-2 fs-5">Agendar Cita</button>
 }
- 
+
 @section Scripts {
+    <script>
+       
+ 
+        const today = new Date();
+        today.setDate(today.getDate() + 1);
+     
+        const formattedDate = today.toISOString().slice(0, 10);
+        
+        document.getElementById('appointmentDate').setAttribute('min', formattedDate);
+         
+    </script>
+
     <script>
         let dia_semana = document.getElementById("dia-semana")
         const daysOfWeek = [
@@ -67,9 +80,11 @@
         document.getElementById("appointmentDate").addEventListener("change", updateSchedules);
 
         function updateSchedules() {
+            console.log("WORK")
             const doctorId = document.getElementById("doctorSelect").value;
             const appointmentDate = document.getElementById("appointmentDate").value;
             const scheduleGrid = document.getElementById("scheduleGrid");
+            const schedulesEmpty = document.getElementById("schedulesEmpty");
 
             // Limpiar horarios actuales
             scheduleGrid.innerHTML = "";
@@ -83,41 +98,59 @@
                 dia_semana.textContent = `(${daysOfWeek[dayOfWeek]})`
 
                 // Llamar a la API con doctorId y dayOfWeek
-                fetch(`/schedules/GetSchedulesByDoctor?doctorId=${doctorId}&dayOfWeek=${dayOfWeek}`)
+                fetch(`/schedules/GetSchedulesByDoctor?doctorId=${doctorId}&dayOfWeek=${dayOfWeek + 1}`)
                     .then(response => response.json())
                     .then(data => {
-                        data.forEach(schedule => {       
 
-                            console.log(schedule)       
+                        if (data.Data.length == 0) {
+                            addClasAndRemoveOther(schedulesEmpty, "d-block", "d-none")
+                        } else {
+                            addClasAndRemoveOther(schedulesEmpty, "d-none", "d-block")
+                        }
+                        data.Data.forEach(schedule => {
 
-                            const startTime = `${schedule.StartTime.Hours.toString().padStart(2, '0')}:${schedule.StartTime.Minutes.toString().padStart(2, '0')}`;
-                            const endTime = `${schedule.EndTime.Hours.toString().padStart(2, '0')}:${schedule.EndTime.Minutes.toString().padStart(2, '0')}`;
+                            for (shift of schedule.Shifts) {
 
-                            const scheduleButton = document.createElement("div");
-                            if (schedule.Status == "Disponible") {
-                                scheduleButton.className = "btn btn-outline-primary";
-                                scheduleButton.style.cursor = "pointer";
 
+                                for (block of shift.Blocks) {
+
+                                    const startTime = `${block.BlockStartTime.Hours.toString().padStart(2, '0')}:${block.BlockStartTime.Minutes.toString().padStart(2, '0')}`;
+                                    const endTime = `${block.BlockEndTime.Hours.toString().padStart(2, '0')}:${block.BlockEndTime.Minutes.toString().padStart(2, '0')}`;
+
+                                    const scheduleButton = document.createElement("div");
+                                    scheduleButton.setAttribute("data-BlockID", block.BlockID);
+
+                                    if (block.Status == "Disponible") {
+                                        scheduleButton.className = "btn btn-outline-primary";
+                                        scheduleButton.style.cursor = "pointer";
+
+                                    }
+                                    if (block.Status == "Ocupado") {
+                                        scheduleButton.className = "btn btn-outline-danger";
+                                    }
+
+                                    scheduleButton.textContent = `${startTime} - ${endTime}`;
+
+                                    // Al hacer clic, seleccionar el horario
+                                    if (block.Status == "Disponible") {
+                                        scheduleButton.addEventListener("click", function () {
+                                            console.log("work", block.BlockID)
+                                            document.getElementById("blockId").value = scheduleButton.getAttribute("data-BlockID");
+
+                                            // Resaltar el horario seleccionado
+                                            Array.from(scheduleGrid.children).forEach(btn => {
+                                                btn.classList.remove("bg-success");
+                                                btn.classList.remove("text-white");
+                                            });
+                                            scheduleButton.classList.add("bg-success");
+                                            scheduleButton.classList.add("text-white");
+                                        });
+                                    }
+
+                                    scheduleGrid.appendChild(scheduleButton);
+                                }
                             }
-                            if (schedule.Status == "Ocupado") {
-                                scheduleButton.className = "btn btn-outline-danger";
-                            }
 
-                            scheduleButton.textContent = `${startTime} - ${endTime}`;
-
-                            // Al hacer clic, seleccionar el horario
-                            if (schedule.Status == "Disponible") {
-                                scheduleButton.addEventListener("click", function () {
-                                    document.getElementById("selectedTime").value = startTime;
-
-                                    // Resaltar el horario seleccionado
-                                    Array.from(scheduleGrid.children).forEach(btn => btn.classList.remove("bg-success"));
-                                    scheduleButton.classList.add("bg-success");
-                                    scheduleButton.classList.add("text-white");
-                                });
-                            }
-
-                            scheduleGrid.appendChild(scheduleButton);
                         });
                     });
             }
@@ -126,4 +159,3 @@
     </script>
 }
 
- 

@@ -12,10 +12,6 @@ GO
 USE CONSULTORIO_VIDA_SALUD;
 GO
 
- 
-select * from users;
-select * from Doctors;
-select * from Patients;
 
 -- Users Table
 CREATE TABLE Users (
@@ -49,23 +45,41 @@ CREATE TABLE Patients (
 CREATE TABLE Schedules (
     ScheduleID INT IDENTITY(1,1) PRIMARY KEY,
     DoctorID INT NOT NULL,
-    DayOfWeek NVARCHAR(15) CHECK (DayOfWeek IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')) NOT NULL,
-    StartTime TIME NOT NULL,
-    EndTime TIME NOT NULL,
+    DayOfWeek INT CHECK (DayOfWeek BETWEEN 1 AND 7) NOT NULL, -- 1 = Lunes, 7 = Domingo
     FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
 );
-select * from Schedules
+
+CREATE TABLE Shifts (
+    ShiftID INT IDENTITY(1,1) PRIMARY KEY,
+    ScheduleID INT NOT NULL,
+	Description VARCHAR(100),
+	BlockDurationMinutes INT DEFAULT 30 CHECK (BlockDurationMinutes > 0),
+	FOREIGN KEY (ScheduleID) REFERENCES Schedules(ScheduleID)
+);
+
+CREATE TABLE Blocks (
+    BlockID INT IDENTITY(1,1) PRIMARY KEY,
+    ShiftID INT NOT NULL,
+    BlockStartTime TIME NOT NULL,
+    BlockEndTime TIME NOT NULL,
+    FOREIGN KEY (ShiftID) REFERENCES Shifts(ShiftID),
+    CHECK (BlockStartTime < BlockEndTime)
+);
+
+
 -- Appointments Table
 CREATE TABLE Appointments (
     AppointmentID INT IDENTITY(1,1) PRIMARY KEY,
     PatientID INT NOT NULL,
     DoctorID INT NOT NULL,
     Date DATE NOT NULL,
-    Time TIME NOT NULL,
+    BlockID INT NOT NULL,
     Status NVARCHAR(50) CHECK (Status IN ('Scheduled', 'Canceled', 'Completed')) NOT NULL,
     Notes NVARCHAR(MAX),
     FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
-    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
+    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID),
+	FOREIGN KEY (BlockID) REFERENCES Blocks(BlockID)
+
 );
  
 -- Notifications Table
@@ -88,6 +102,15 @@ CREATE TABLE MedicalHistory (
     FOREIGN KEY (AppointmentId) REFERENCES Appointments(AppointmentId)
 );
 
+ 
+CREATE TABLE PasswordRecovery (
+    PasswordRecoveryID INT IDENTITY(1,1) PRIMARY KEY,
+	Code VARCHAR(100),
+    Date DATETIME NOT NULL,
+	UserID INT NOT NULL,
+	Status BIT,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+);
 --
 INSERT INTO Users (FirstName, LastName, Email, Phone, Password, Role, IsActive)
 VALUES 

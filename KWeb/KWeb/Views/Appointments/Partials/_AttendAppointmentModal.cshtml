@@ -1,0 +1,27 @@
+﻿
+@model KWeb.ModelsDB.Appointments
+
+<div class="modal fade" id="attendAppointmentModal_@Model.AppointmentID" tabindex="-1" aria-labelledby="attendAppointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="attendAppointmentModalLabel">Atender Cita</h5>
+            </div>
+            <div class="modal-body">
+                <form action="@Url.Action("AttendAppointment", "Appointments")" method="post">
+                    <div class="mb-3">
+                        <label for="appointmentNotes" class="form-label">Diagnostico</label>
+                        <textarea class="form-control" id="appointmentNotes" name="notes" rows="3" required></textarea>
+                    </div>
+                    <input type="hidden" name="appointmentId" value="@Model.AppointmentID">
+                    <input type="hidden" name="blockId" value="@Model.BlockID">
+                    <input type="hidden" name="doctorId" value="@Model.DoctorID">
+
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Diagnostico</button>
+                </form>
+            </div>
+          
+        </div>
+    </div>
+</div>
