@@ -56,7 +56,7 @@ namespace KWeb.Controllers
             int PatientId = user.Patients.First().PatientID;
 
             var appointments = await _context.Appointments.Where(a => a.PatientID == PatientId).ToListAsync();
-            var doctors = await _context.Doctors.ToListAsync();
+            var doctors = await _context.Doctors.Where(d => d.Users.IsActive).ToListAsync();
 
             var viewModel = new AppointmentsOfPatientViewModel
             {     
